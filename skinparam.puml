@@ -1,0 +1,12 @@
+skinparam sequence {
+    ArrowColor Black
+    LifeLineBorderColor Black
+    ParticipantBorderColor Black
+    BoxBorderColor Black
+    BoxBackgroundColor White
+    ActivationBorderColor #CCCCCC
+    ActivationBackgroundColor #F5F5F5
+    ActorBorderColor Black
+    ActorBackgroundColor White
+    ActorFontColor Black
+}
