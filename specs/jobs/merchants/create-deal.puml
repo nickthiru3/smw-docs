@@ -3,7 +3,7 @@
 
 actor Merchant as mer
 participant "App" as app
-participant "API" as api
+participant "BFF API" as api
 participant "ms-deals" as msd
 
 mer -[#blue]> app ++: "Create deal" page
