@@ -18,7 +18,6 @@
     - [Configuration Management](#configuration-management)
       - [Environment-Specific Configuration](#environment-specific-configuration)
       - [AWS SDK Integration](#aws-sdk-integration)
-    - [Available Services](#available-services)
     - [Development Workflow Integration](#development-workflow-integration)
       - [Local Development Process](#local-development-process)
       - [CI/CD Pipeline Integration](#cicd-pipeline-integration)
@@ -152,6 +151,8 @@
   - [Team Collaboration](#team-collaboration-1)
   - [Further Reading](#further-reading)
 
+</br>
+
 # CI/CD Guide for Serverless Microservices
 
 ## Introduction
@@ -241,13 +242,6 @@ graph LR
     D -.-> G[Production Release]
 ```
 
-**Benefits:**
-
-- **$0 development costs** - No AWS charges for local development
-- **Fast iteration cycles** - No network latency or cold starts
-- **Complete isolation** - Each developer has their own environment
-- **Offline development** - Work without internet connectivity
-
 ### Quick Setup
 
 #### 1. Initial LocalStack Setup
@@ -327,21 +321,6 @@ const dynamoClient = new DynamoDBClient({
   }),
 });
 ```
-
-### Available Services
-
-LocalStack Community Edition provides all core AWS services needed for microservice development:
-
-| Service            | Status | Use Case               |
-| ------------------ | ------ | ---------------------- |
-| **Lambda**         | ✅     | Serverless functions   |
-| **API Gateway**    | ✅     | REST API endpoints     |
-| **DynamoDB**       | ✅     | NoSQL database         |
-| **S3**             | ✅     | File storage           |
-| **SNS/SQS**        | ✅     | Messaging              |
-| **CloudWatch**     | ✅     | Logging/monitoring     |
-| **IAM**            | ✅     | Access control         |
-| **CloudFormation** | ✅     | Infrastructure as Code |
 
 ### Development Workflow Integration
 

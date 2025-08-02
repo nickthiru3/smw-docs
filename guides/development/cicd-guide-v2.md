@@ -4,73 +4,140 @@
 
 - [Introduction](#introduction)
 - [Strategy Overview](#strategy-overview)
+  - [Why Refined Trunk-Based with Native AWS Integration?](#why-refined-trunk-based-with-native-aws-integration)
+  - [Architecture Comparison](#architecture-comparison)
 - [Core Concepts](#core-concepts)
+  - [Branch Strategy](#branch-strategy)
+  - [Environment Strategy](#environment-strategy)
+  - [Versioning Strategy](#versioning-strategy)
+  - [Team Workflow](#team-workflow)
+    - [Daily Development](#daily-development)
+    - [Release Process (Version Cut Workflow)](#release-process-version-cut-workflow)
+    - [Hotfix Process](#hotfix-process)
 - [LocalStack Integration](#localstack-integration-for-local-development)
-- [GitHub Actions Integration](#github-actions-integration-for-tag-based-deployments)
+  - [Overview](#overview)
+  - [Quick Setup](#quick-setup)
+  - [Configuration Management](#configuration-management)
+  - [Development Workflow](#development-workflow)
+  - [Testing Strategy](#testing-strategy)
+  - [Best Practices](#best-practices)
 - [Simplified Trunk-Based Workflow](#simplified-trunk-based-release-workflow)
+  - [Complete Enterprise Architecture](#complete-enterprise-architecture)
+    - [Environment Strategy](#environment-strategy-1)
+  - [Team Roles and Responsibilities](#team-roles-and-responsibilities)
+    - [Development Team](#development-team)
+    - [Release Manager (Optional)](#release-manager-optional)
+  - [Automation Scripts](#automation-scripts)
+    - [Package.json Scripts](#packagejson-scripts)
+    - [Release Script](#release-script)
+  - [Manual Approval Integration](#manual-approval-integration)
+    - [AWS CodePipeline Manual Approval (Recommended)](#aws-codepipeline-manual-approval-recommended)
+    - [Approval Process](#approval-process)
+  - [Rollback Strategies](#rollback-strategies-1)
+    - [Production Rollback Options](#production-rollback-options)
+  - [Merge Request Strategy](#merge-request-strategy)
+    - [Code Review Process](#code-review-process)
+    - [Review Checklist](#review-checklist)
+  - [Hotfix Process](#hotfix-process-1)
+    - [Emergency Hotfix Workflow](#emergency-hotfix-workflow)
 - [Teams Coordination](#teams-coordination--workflow)
+  - [Platform Team Responsibilities](#platform-team-responsibilities)
+    - [IAM Management](#iam-management)
+    - [Infrastructure](#infrastructure)
+  - [Development Team Integration](#development-team-integration)
+    - [Repository Setup](#repository-setup)
+    - [Daily Workflow](#daily-workflow-1)
+- [Multi-Repo CI/CD Architecture](#multi-repo-cicd-architecture)
+  - [Overview](#overview-1)
+  - [Repository Structure](#repository-structure)
+  - [Pipeline Per Service Strategy](#pipeline-per-service-strategy)
+  - [Resource Naming & Isolation](#resource-naming--isolation)
+  - [Rollback Strategies](#rollback-strategies)
+    - [Service-Level Rollbacks](#service-level-rollbacks)
+    - [App-Level Rollbacks](#app-level-rollbacks)
+    - [Emergency Rollback Scenarios](#emergency-rollback-scenarios)
+  - [Pipeline Bootstrap & LocalStack Separation](#pipeline-bootstrap--localstack-separation)
+  - [Team Responsibilities](#team-responsibilities)
+    - [Service-Level Responsibilities](#service-level-responsibilities)
+    - [App-Level Responsibilities](#app-level-responsibilities)
+  - [CodePipeline Rollback Mechanics](#codepipeline-rollback-mechanics)
+  - [Coordination Workflows](#coordination-workflows)
 - [Reference Implementation](#reference-implementation)
+  - [Pipeline Configuration](#pipeline-configuration)
+  - [Stage Configuration](#stage-configuration)
 - [Migration Guide](#migration-from-v1-implementation)
 
 ## Introduction
 
-This guide outlines a **simplified trunk-based CI/CD strategy** specifically designed for **small team microservices development**. After extensive research into various branching strategies (Three-Flow, GitLab Flow, Release Flow, Vercel's Three-Branch Strategy), we've adopted a pragmatic approach that balances simplicity with enterprise-grade practices.
+This guide outlines a **refined trunk-based CI/CD strategy** specifically designed for **enterprise microservices development**. After extensive research and practical experience with various branching strategies (Three-Flow, GitLab Flow, Release Flow), we've developed a pragmatic approach that leverages **native AWS CodePipeline triggers** and eliminates unnecessary complexity.
 
 **Key Design Principles:**
 
-- **Simplicity over complexity**: Minimize branches and merge conflicts
-- **Speed over ceremony**: Fast path from development to production
-- **Quality gates**: Code review and testing at every step
-- **Cost optimization**: LocalStack for development, AWS for staging/production
-- **Team size optimization**: Perfect for small, focused microservice teams
+- **Native AWS integration**: CodePipeline triggers directly on branch changes
+- **Simplified branching**: Master branch + release branch for staging/production
+- **Cost optimization**: LocalStack for development, minimal AWS accounts
+- **Quality gates**: Manual approval for production deployments
+- **Enterprise-ready**: Scalable for teams while maintaining simplicity
+- **Fast feedback**: Direct path from development to production
 
 ## Strategy Overview
 
-### Why Simplified Trunk-Based?
+### Why Refined Trunk-Based with Native AWS Integration?
 
 **Traditional Complex Strategies Issues:**
 
 - ❌ Too many branches (master, candidate, release, feature)
-- ❌ Complex merge strategies and coordination overhead
-- ❌ Slow feedback loops and documentation inconsistencies
+- ❌ GitHub Actions orchestration complexity
+- ❌ Manual pipeline triggering and coordination overhead
+- ❌ Slow feedback loops and merge conflicts
 
-**Our Simplified Approach Benefits:**
+**Our Refined Approach Benefits:**
 
-- ✅ Two environments: LocalStack (local) → Staging → Production
-- ✅ One main branch: All integration happens on `main`
-- ✅ Simple versioning: Semantic versioning with `v*` tags
-- ✅ Fast delivery: Direct path from merge to production
-- ✅ Small team optimized: Perfect for microservice development
+- ✅ **Native CodePipeline triggers**: Pipelines trigger automatically on branch changes
+- ✅ **Two-branch strategy**: Master (development) + Release (staging/production)
+- ✅ **LocalStack development**: $0 cost local testing with full AWS emulation
+- ✅ **Single pipeline per environment**: Staging pipeline with production stage
+- ✅ **Manual production gates**: Controlled production deployments
+- ✅ **Simplified hotfix flow**: Master → LocalStack → Version Cut → Staging → Production
 
 ### Architecture Comparison
 
-| Aspect            | Complex Strategies           | Our Simplified Approach               |
-| ----------------- | ---------------------------- | ------------------------------------- |
-| **Branches**      | 3-4 branches                 | 1 main + feature branches             |
-| **Environments**  | 4 environments               | 3 environments                        |
-| **Tagging**       | Multiple patterns            | Single pattern (v\*)                  |
-| **Team Roles**    | Multiple specialized roles   | Developers + optional release manager |
-| **Feedback Loop** | Long path                    | Short path                            |
-| **Cost**          | High (multiple AWS accounts) | Low (LocalStack + 2 accounts)         |
+| Aspect                | Complex Strategies (Three-Flow)         | Our Refined Approach                       |
+| --------------------- | --------------------------------------- | ------------------------------------------ |
+| **Branches**          | 3-4 branches (master/candidate/release) | 2 branches (master + release)              |
+| **Pipeline Triggers** | GitHub Actions orchestration            | Native CodePipeline branch triggers        |
+| **Environments**      | 4 environments (local/dev/staging/prod) | 3 environments (LocalStack/staging/prod)   |
+| **AWS Accounts**      | 3-4 accounts                            | 2 accounts (staging + production)          |
+| **Deployment Flow**   | Complex merge-back automation           | Simple version cut-and-deploy workflow     |
+| **Manual Approvals**  | Multiple approval points                | Single production approval gate            |
+| **Hotfix Process**    | Separate release branch workflow        | Master → LocalStack → Version Cut → Deploy |
+| **Cost**              | High (multiple AWS accounts)            | Low (LocalStack + 2 accounts)              |
+| **Complexity**        | High coordination overhead              | Low, enterprise-ready simplicity           |
 
 ## Core Concepts
 
 ### Branch Strategy
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Feature Branch │ →  │   Main Branch   │ →  │   Production    │
-│   (LocalStack)  │    │   (Staging)     │    │   (Tagged)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌──────────────────┐     ┌─────────────────┐    ┌─────────────────┐
+│  Master Branch  │ →  │ "Version Cut" to │  →  │  Release Branch │ →  │   Production    │
+│   (LocalStack)  │    │  Release Branch  │     │   (Staging)     │    │ (Manual Gate)   │
+└─────────────────┘    └──────────────────┘     └─────────────────┘    └─────────────────┘
+                                                        │
+                                                        ▼
+                                                ┌─────────────────┐
+                                                │ CodePipeline    │
+                                                │ Auto-Triggered  │
+                                                └─────────────────┘
 ```
 
 ### Environment Strategy
 
-| Environment    | Source           | Trigger      | Purpose                | AWS Account |
-| -------------- | ---------------- | ------------ | ---------------------- | ----------- |
-| **Local**      | Feature branches | Manual       | Individual development | LocalStack  |
-| **Staging**    | `main` branch    | Auto (push)  | Integration testing    | Current AWS |
-| **Production** | `main` branch    | Manual (tag) | Live deployment        | Future AWS  |
+| Environment    | Source         | Trigger                                                         | Purpose               | Account          |
+| -------------- | -------------- | --------------------------------------------------------------- | --------------------- | ---------------- |
+| **Local**      | Master branch  | Manual (Git "version cut" from master branch to release branch) | Development & testing | LocalStack       |
+| **Staging**    | Release branch | Auto (CodePipeline)                                             | QA & integration test | AWS - Staging    |
+| **Production** | Release branch | Manual approval gate (CodePipeline)                             | Live deployment       | AWS - Production |
 
 ### Versioning Strategy
 
@@ -85,19 +152,47 @@ This guide outlines a **simplified trunk-based CI/CD strategy** specifically des
 
 **Daily Development:**
 
-1. Create feature branch from `main`
-2. Develop locally with LocalStack
-3. Create merge request when ready
-4. Code review by team member
-5. Merge to main → automatic staging deployment
-6. QA testing in staging environment
-7. Create release tag → production deployment
+1. Work directly on `master` branch or create feature branches from `master`
+2. Develop and test locally with LocalStack (`npm run dev:localstack`)
+3. Test infrastructure changes with LocalStack deployment
+4. Create merge request when ready (if using feature branches)
+
+**Release Process (Version Cut Workflow):**
+
+1. **Prepare Release**: Ensure master branch is stable and tested in LocalStack
+2. **Version Cut to Release Branch**:
+   ```bash
+   git checkout -b release  # or switch to existing release branch
+   git merge master --no-ff
+   git tag -a v1.2.3 -m "Release v1.2.3"  # increment version appropriately
+   git push origin release --tags
+   ```
+3. **Automatic Staging Deployment**: CodePipeline automatically triggers on release branch push
+4. **QA Testing**: Team tests the staging deployment
+5. **Production Deployment**: Manual approval in CodePipeline console to deploy to production
+
+**Hotfix Process:**
+
+1. **Fix on Master**: Make hotfix directly on master branch
+2. **Test Locally**: Verify fix using LocalStack
+3. **Version Cut to Release**: Follow same "version cut" process with patch version increment
+4. **Deploy**: Staging → Manual approval → Production
 
 ## LocalStack Integration for Local Development
 
 ### Overview
 
 LocalStack provides a fully functional local AWS cloud stack, enabling developers to develop and test their cloud applications offline.
+
+**Installation Methods:**
+
+Developers can choose from multiple LocalStack installation approaches:
+- **Docker Desktop Extension** (Recommended for GUI users)
+- **CLI Installation** (Traditional command-line approach)
+- **Docker Compose** (Team standardization)
+- **Manual Docker Run** (Advanced users)
+
+**Note:** The setup steps below focus on CLI/Docker Compose approach. Developers using other installation methods (like Docker Desktop extension) should adapt the configuration and workflow guidance to their chosen setup. The core concepts, environment variables, and CDK integration patterns remain the same regardless of installation method.
 
 **Key Benefits:**
 
@@ -142,77 +237,6 @@ export const config: Config = {
     tablePrefix: "local-",
   },
 };
-```
-
-## GitHub Actions Integration for Tag-Based Deployments
-
-### Overview
-
-We use **GitHub Actions** to orchestrate our CI/CD pipeline, with **tag-based deployments** for production releases.
-
-### Workflow Configuration
-
-```yaml
-name: Simplified Microservice CI/CD
-
-on:
-  push:
-    branches: [main]
-    tags: ["v*"]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm test
-
-  deploy-staging:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Deploy to Staging
-        run: |
-          aws codepipeline start-pipeline-execution \
-            --name "super-deals-deals-ms-staging-pipeline"
-
-  deploy-production:
-    needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Extract version from tag
-        id: version
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      - name: Deploy to Production
-        run: |
-          aws codepipeline start-pipeline-execution \
-            --name "super-deals-deals-ms-production-pipeline"
 ```
 
 ## Simplified Trunk-Based Release Workflow
@@ -412,6 +436,298 @@ git push origin v1.2.4
 - Use LocalStack for local development
 - Create merge requests for all changes
 - Test in staging before production release
+
+## Multi-Repo CI/CD Architecture
+
+### Overview
+
+For the Super Deals microservices architecture, each BFF API and microservice team maintains their own repository and CI/CD pipeline. This approach maximizes team autonomy while maintaining system coherence through shared patterns and coordination workflows.
+
+### Repository Structure
+
+```
+super-deals-bff-api-web/     # BFF API team repo
+├── .github/workflows/
+├── lib/pipeline/
+└── src/
+
+super-deals-ms-deals/        # Deals microservice team repo
+├── .github/workflows/
+├── lib/pipeline/
+└── src/
+
+super-deals-ms-users/        # Users microservice team repo
+├── .github/workflows/
+├── lib/pipeline/
+└── src/
+```
+
+### Pipeline Per Service Strategy
+
+**Architecture Pattern:**
+
+```
+Repo A (BFF-API)   → Pipeline A → Staging Account (BFF resources)
+Repo B (Deals-MS)  → Pipeline B → Staging Account (Deals resources)
+Repo C (Users-MS)  → Pipeline C → Staging Account (Users resources)
+```
+
+**Benefits:**
+
+- ✅ **Team Independence**: Each team controls their deployment lifecycle
+- ✅ **Parallel Development**: Teams can deploy simultaneously without conflicts
+- ✅ **Isolated Failures**: Service issues don't block other teams
+- ✅ **Service-Level Versioning**: Independent semantic versioning per service
+
+### Resource Naming & Isolation
+
+Since multiple services deploy to the same staging AWS account, all CDK construct IDs and AWS resource names must be prefixed with the service identifier to prevent conflicts.
+
+**Naming Convention:**
+
+```typescript
+// In super-deals-ms-deals CDK stack
+const dealsTable = new dynamodb.Table(this, "DealsTable", {
+  tableName: "deals-ms-deals-table", // Prefixed with service name
+  // ...
+});
+
+const dealsApi = new apigateway.RestApi(this, "DealsApi", {
+  restApiName: "deals-ms-api", // Prefixed with service name
+  // ...
+});
+```
+
+**Service Versioning Pattern:**
+
+```
+Service Versions: bff-api@v1.2.3, deals-ms@v2.1.0, users-ms@v1.5.2
+App Version: super-deals@v3.1.0 (composed of above service versions)
+```
+
+### Rollback Strategies
+
+#### Service-Level Rollbacks
+
+**When Needed:**
+
+- Individual service deployment introduces bugs
+- Service performance degradation
+- Service-specific security issues
+- Database migration failures
+
+**How to Execute:**
+
+1. **Via CodePipeline Console:**
+
+   - Navigate to the specific service's pipeline (e.g., `deals-ms-staging-pipeline`)
+   - View execution history
+   - Select previous successful deployment
+   - Click "Retry" to redeploy previous version
+
+2. **Via Git Tag Rollback:**
+   ```bash
+   # Example: Rolling back deals-ms from v2.1.0 to v2.0.5
+   git checkout release
+   git reset --hard v2.0.5
+   git tag -a v2.1.1-rollback -m "Rollback to v2.0.5"
+   git push origin release --force --tags
+   ```
+
+**Scenario Example:**
+
+```
+Problem: deals-ms@v2.1.0 has a bug causing 500 errors on deal creation
+Impact: Only deal creation affected, other services unimpacted
+Solution: Service-level rollback of deals-ms to v2.0.5
+Result: Deal creation restored, other services continue normal operation
+```
+
+#### App-Level Rollbacks
+
+**When Needed:**
+
+- Breaking changes in service contracts/APIs
+- Cross-service integration failures
+- Coordinated feature rollbacks
+- Security vulnerabilities affecting multiple services
+
+**How to Execute:**
+
+1. **Coordinated Service Rollbacks:**
+
+   ```bash
+   # Roll back to known-good service combination
+   # BFF API team:
+   git tag -a v1.2.4-rollback -m "App rollback to stable state"
+
+   # Deals MS team:
+   git tag -a v2.0.6-rollback -m "App rollback to stable state"
+
+   # Users MS team:
+   git tag -a v1.5.3-rollback -m "App rollback to stable state"
+   ```
+
+2. **Via Release Coordination:**
+   - Platform team coordinates rollback across all affected services
+   - Each team executes service-level rollback to specified versions
+   - Integration testing validates the rolled-back app state
+
+**Scenario Example:**
+
+```
+Problem: BFF API v1.2.3 introduces breaking change in user authentication flow
+Impact: All services that depend on user context affected
+Solution: App-level rollback
+- BFF API: v1.2.3 → v1.2.2 (remove breaking auth change)
+- Users MS: v1.5.2 → v1.5.1 (revert auth integration)
+- Deals MS: No rollback needed (not affected)
+Result: Authentication restored across entire application
+```
+
+#### Emergency Rollback Scenarios
+
+**Scenario 1: Database Schema Change Gone Wrong**
+
+```
+Service: deals-ms@v2.1.0
+Problem: DynamoDB table schema migration corrupts data
+Impact: Deal creation/retrieval completely broken
+Action: Service-level rollback + data restoration
+Steps:
+1. Rollback deals-ms to v2.0.5 (pre-migration)
+2. Restore DynamoDB table from backup
+3. Coordinate with QA team for validation
+```
+
+**Scenario 2: Cross-Service API Breaking Change**
+
+```
+Service: bff-api@v1.3.0 changes deal request format
+Problem: deals-ms can't process new request format
+Impact: Deal creation fails across entire app
+Action: App-level coordinated rollback
+Steps:
+1. BFF API: v1.3.0 → v1.2.9 (revert API change)
+2. Deals MS: May need rollback if it was updated for new format
+3. Full integration testing before declaring rollback complete
+```
+
+**Scenario 3: Performance Degradation**
+
+```
+Service: users-ms@v1.6.0
+Problem: New caching layer causes memory leaks
+Impact: Gradual performance degradation, eventual service failure
+Action: Service-level rollback
+Steps:
+1. Monitor CloudWatch metrics to confirm issue
+2. Rollback users-ms to v1.5.8 via CodePipeline console
+3. Investigate caching implementation offline
+```
+
+### Pipeline Bootstrap & LocalStack Separation
+
+**Initial Team Setup:**
+
+Each team must bootstrap their CodePipeline once at project start:
+
+```bash
+# One-time pipeline deployment (team lead)
+ENV_NAME=staging npm run deploy  # Deploys pipeline to staging AWS account
+```
+
+**Daily Development Workflow:**
+
+```bash
+# LocalStack development (all team members)
+ENV_NAME=local npm run deploy:localstack  # Service infra only, no pipeline
+```
+
+**CDK App Structure:**
+
+```typescript
+// bin/service-app.ts - Conditional stack deployment
+const envName = process.env.ENV_NAME || "local";
+
+if (envName === "local") {
+  // LocalStack: Deploy only service infrastructure
+  new ServiceInfraStack(app, "ServiceInfraStack", {
+    envName,
+    env: { account: "000000000000", region: "us-east-1" }, // LocalStack
+  });
+} else {
+  // AWS: Deploy both pipeline AND service infrastructure
+  new ServicePipelineStack(app, "ServicePipelineStack", {
+    envName,
+    env: { account: config.account, region: config.region },
+  });
+}
+```
+
+### Team Responsibilities
+
+**Service-Level Responsibilities:**
+
+| Action                       | Responsible Party | Authority Level   |
+| ---------------------------- | ----------------- | ----------------- |
+| Manual production approval   | Team lead         | Service-scoped    |
+| Service rollback decision    | Team lead         | Service-scoped    |
+| Service health monitoring    | Service team      | Service-scoped    |
+| Breaking change coordination | Service team      | Cross-team impact |
+
+**App-Level Responsibilities:**
+
+| Action                       | Responsible Party | Authority Level    |
+| ---------------------------- | ----------------- | ------------------ |
+| App-level rollback           | Platform team     | Cross-service      |
+| Emergency coordination       | On-call engineer  | Immediate response |
+| Release planning             | Release manager   | Cross-team         |
+| Integration issue resolution | Platform team     | Cross-service      |
+
+### CodePipeline Rollback Mechanics
+
+**How Rollbacks Actually Work:**
+
+When you execute a rollback via the CodePipeline console:
+
+1. **Artifact Reuse**: Pipeline uses stored artifacts from the selected previous execution
+2. **No Rebuild**: Does NOT pull fresh code or rebuild from source
+3. **Exact Restoration**: Deploys the identical CloudFormation template and Lambda code
+4. **Fast Execution**: Skips source/build stages, only runs deployment
+
+**Step-by-Step Rollback Process:**
+
+```
+1. AWS Console → CodePipeline → Select service pipeline
+2. Click "Execution history" tab
+3. Identify successful execution from desired time/version
+4. Click "Retry" on that specific execution
+5. Pipeline re-executes deployment stage only
+6. Infrastructure restored to exact previous state
+7. Verify rollback success via monitoring/testing
+```
+
+**Artifact Management:**
+
+- **Storage**: S3 bucket managed by CodePipeline
+- **Retention**: 30 days default (configurable)
+- **Contents**: Compiled code, CloudFormation templates, config files
+- **Cost**: Minimal S3 storage fees
+
+### Coordination Workflows
+
+**Release Coordination:**
+
+- Teams announce major releases in shared Slack channel
+- Breaking changes require coordination with dependent services
+- Platform team maintains app-level version tracking
+
+**Rollback Coordination:**
+
+- Service-level rollbacks: Team lead decides independently
+- App-level rollbacks: Platform team coordinates across teams
+- Emergency rollbacks: On-call engineer can initiate, coordinate later
 
 ## Reference Implementation
 
