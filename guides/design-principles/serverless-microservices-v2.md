@@ -86,7 +86,7 @@ Our operating model, "Autonomous Teams with Release Gates," is designed for clar
   - **Type:** Enabling Team.
   - **Responsibility:** This is a small group of senior architects and technical leaders responsible for the macro-level design of our socio-technical system. Their core responsibilities include designing the team structures, establishing the "golden path" standards and guardrails for all teams, and continually improving the overall system architecture based on feedback and metrics. They own and maintain this very architecture guide as the canonical source of truth for our standards.
   - **Skills:** Deep system architecture knowledge, understanding of organizational design, and strong leadership to align multiple teams towards a shared technical vision.
-  - **Collaborative Interactions:** This team primarily uses a **facilitating** interaction model. They consult with and support the Platform and Feature teams to help them navigate the system and adhere to established patterns, rather than acting as a gatekeeper.
+  - **Collaborative Interactions:** This team primarily uses a **facilitating** interaction model. They consult with and support the BFF API and microservice teams to help them navigate the system and adhere to established patterns, rather than acting as a gatekeeper.
 
 - **BFF API Team (`super-deals-web-bff-api`, etc.):**
 
