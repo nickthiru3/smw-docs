@@ -1,30 +1,16 @@
-Story: Add a deal
+Story: Merchant creates a deal
 
 As a merchant
-I want to be able to add a deal
+I want to be able to create a deal
 So that I can sell my products and/or services
 
 ---
 
-Rule: Merchant must be signed-in to add a deal
+Rule: Merchant must be signed-in to create a deal
 
-Scenario: Merchant successfully adds a deal
+Scenario: Merchant successfully creates a deal
 
-    Merchant signs in
-
-      ? This is not implemented yet
-
-    Navigates to "Add a deal" page
-
-    Fills out an 'Add a deal' form
-
-    Clicks 'submit' button
-
-    Deal is saved
-
-    Receives "Success" response
-
-Scenario: Merchant is not able to go to "Add a deal" page without signing-in
+Scenario: Merchant is not able to go to "Create a deal" page without signing-in
 
 ---
 

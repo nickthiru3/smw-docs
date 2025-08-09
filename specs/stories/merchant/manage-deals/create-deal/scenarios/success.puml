@@ -1,0 +1,26 @@
+' Scenario: Merchant successfully creates a deal
+
+@startuml merchants-create-deal
+!include skinparam.puml
+
+actor Merchant as mer
+participant "App" as app
+participant "BFF API" as api
+participant "ms-deals" as msd
+participant "ms-deals S3" as s3
+
+mer -[#blue]> app ++: Merchant signs in
+app -[#blue]> app: auth
+mer -[#blue]> app: Navigates to\n"Create a deal" page
+mer -[#blue]> app: Fills out and submits\n'Create a deal' form
+app -[#blue]> api ++: deals.uploadLogo()
+api -[#blue]> s3 ++: uploadLogo()
+s3 -[#blue]-> api: "success, with logoUrl"
+api -[#blue]-> app: "success, with logoUrl"
+app -[#blue]-> api: deals.create()
+api -[#red]> msd ++: createDeal()
+msd -[#red]-> api: "success, with dealId"
+api -[#blue]-> app: "success, with dealId"
+app -[#blue]-> mer: Redirected to\n"deal successfully\ncreated" page
+
+@enduml

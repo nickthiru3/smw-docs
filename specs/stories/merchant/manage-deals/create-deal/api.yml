@@ -1,0 +1,84 @@
+paths:
+  /deals:
+    post:
+      operationId: CreateDeal
+      summary: Merchant can create a deal
+      tags:
+        - deals
+      description: Merchant can create a deal
+      security:
+        # []
+        - jwt: []
+
+      requestBody:
+        required: true
+        description: The deal to create
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Form data for creating a deal
+              required:
+                - merchantId
+                - title
+                - originalPrice
+                - discount
+                - logoUrl
+                - category
+                - expiration
+              properties:
+                merchantId:
+                  type: string
+                  description: ID of merchant who created the deal
+                title:
+                  type: string
+                  description: Title of the deal
+                  maxLength: 255
+                originalPrice:
+                  type: number
+                  description: Original price of the deal
+                  minimum: 0
+                discount:
+                  type: number
+                  description: Deal discount
+                  minimum: 0
+                  maximum: 100
+                logoUrl:
+                  type: string
+                  description: S3 Bucket URL for Logo image of the deal
+                category:
+                  type: string
+                  description: The category this deal falls under
+                  enum:
+                    - foodDrink
+                    - bathroom
+                    - jewelery
+                    - sports
+                    - tech
+                    - auto
+                    - entertainment
+                    - travel
+                expiration:
+                  type: string
+                  format: date
+                  description: >
+                    The expiration date of the deal. Must be a valid date in YYYY-MM-DD format.
+                    Must be at least seven days from today's date.
+
+      responses:
+        "200":
+          description: Successfully created the deal
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - dealId
+                properties:
+                  message:
+                    type: string
+                    example: "Deal successfully created"
+                  dealId:
+                    type: string
+                    example: "1yn5w7gKp8d7L2M3v4e5T9a6B"
