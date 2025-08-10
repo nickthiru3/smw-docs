@@ -1,0 +1,248 @@
+openapi: 3.0.3
+info:
+  title: Super Deals API
+  version: 0.1.0
+paths:
+  /deals:
+    post:
+      operationId: CreateDeal
+      summary: Merchant can create a deal
+      tags:
+        - deals
+      description: Merchant can create a deal
+      security:
+        - jwt: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          description: Optional idempotency key to safely retry POST requests
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        description: The deal to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DealCreateRequest'
+            examples:
+              basic:
+                summary: Minimal valid create deal request
+                value:
+                  merchantId: "merch_123"
+                  title: "20% off coffee"
+                  originalPrice: 5.0
+                  discountPercent: 20
+                  logoUrl: "https://cdn.example.com/logos/shop.png"
+                  category: "food-drink"
+                  expiration: "2025-12-31T23:59:59Z"
+                  description: "Save on your daily coffee"
+      responses:
+        '201':
+          description: Deal created
+          headers:
+            Location:
+              description: URL of the created resource
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+              examples:
+                created:
+                  value:
+                    id: "deal_abc123"
+                    merchantId: "merch_123"
+                    title: "20% off coffee"
+                    originalPrice: 5.0
+                    discountPercent: 20
+                    finalPrice: 4.0
+                    logoUrl: "https://cdn.example.com/logos/shop.png"
+                    category: "food-drink"
+                    expiration: "2025-12-31T23:59:59Z"
+                    status: "active"
+                    createdAt: "2025-08-10T04:00:00Z"
+                    updatedAt: "2025-08-10T04:00:00Z"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingField:
+                  value:
+                    code: "VALIDATION_ERROR"
+                    message: "Field 'title' is required"
+                    details:
+                      field: "title"
+        '401':
+          description: Unauthorized (missing/invalid JWT)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                noAuth:
+                  value:
+                    code: "UNAUTHORIZED"
+                    message: "Missing or invalid token"
+        '403':
+          description: Forbidden (merchant not allowed to create for given merchantId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                forbidden:
+                  value:
+                    code: "FORBIDDEN"
+                    message: "You are not authorized to create deals for this merchant"
+        '409':
+          description: Conflict (duplicate/idempotent retry or unique constraint)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                duplicate:
+                  value:
+                    code: "CONFLICT"
+                    message: "A deal with the same idempotency key already exists"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                generic:
+                  value:
+                    code: "INTERNAL_ERROR"
+                    message: "Unexpected error"
+
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT issued by identity provider. Expected claims should include sub and
+        optionally merchantId/roles used for authorization.
+
+  schemas:
+    DealCreateRequest:
+      type: object
+      description: Form data for creating a deal
+      required:
+        - merchantId
+        - title
+        - originalPrice
+        - discountPercent
+        - logoUrl
+        - category
+        - expiration
+      properties:
+        merchantId:
+          type: string
+          description: ID of merchant who created the deal
+          minLength: 1
+        title:
+          type: string
+          description: Title of the deal
+          maxLength: 255
+        description:
+          type: string
+          description: Optional human-readable description
+          maxLength: 2000
+        originalPrice:
+          type: number
+          minimum: 0.01
+          description: Original price before discount
+        discountPercent:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Percentage discount to apply (1-100)
+        logoUrl:
+          type: string
+          format: uri
+          maxLength: 2000
+        category:
+          type: string
+          description: Deal category slug (e.g., food-drink)
+          maxLength: 64
+        expiration:
+          type: string
+          format: date-time
+          description: When the deal expires (UTC)
+    Deal:
+      type: object
+      required:
+        - id
+        - merchantId
+        - title
+        - originalPrice
+        - discountPercent
+        - finalPrice
+        - logoUrl
+        - category
+        - expiration
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        merchantId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        originalPrice:
+          type: number
+        discountPercent:
+          type: integer
+        finalPrice:
+          type: number
+          description: "Computed server-side: originalPrice * (1 - discountPercent/100)"
+        logoUrl:
+          type: string
+          format: uri
+        category:
+          type: string
+        expiration:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - active
+            - expired
+            - inactive
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          description: Optional, field-level or diagnostic details
+          oneOf:
+            - type: object
+            - type: array
+            - type: string
