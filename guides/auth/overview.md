@@ -2,6 +2,12 @@
 
 This document provides a comprehensive overview of the authentication and authorization system implemented in the Super-Deals application. It covers the core concepts, AWS services used, and the implementation patterns that secure our application.
 
+> Note
+>
+> This overview complements the implementation details in `docs/guides/auth/end-to-end-auth.md` which describes the complete, cross-repo flow from users-ms (producer) to deals-ms (consumer) using SSM/infra-contracts.
+>
+> Also note that API Gateway authorizationScopes must use the slash-form scope strings: `${resourceServerIdentifier}/${scopeName}` (e.g., `deals-dev/write`). The older colon-form (e.g., `deals:write`) may still appear in historical snippets below but should be interpreted as slash-form when configuring API Gateway methods.
+
 ## Table of Contents
 
 1. [Core Concepts](#core-concepts)
@@ -11,6 +17,7 @@ This document provides a comprehensive overview of the authentication and author
 5. [Authorization Flow](#authorization-flow)
 6. [Direct S3 Upload Pattern](#direct-s3-upload-pattern)
 7. [Security Considerations](#security-considerations)
+8. [Permissions Governance](#permissions-governance)
 
 ## Core Concepts
 
@@ -162,7 +169,7 @@ this.resourceServer = new UserPoolResourceServer(this, 'ResourceServer', {
 
 ### Scopes
 
-Scopes define fine-grained permissions for API access:
+Scopes define fine-grained permissions for API access. When configuring API Gateway methods, use slash-form scope strings derived from the resource server identifier and scope name (e.g., `deals-dev/write`).
 
 ```javascript
 this.scopes = [
@@ -339,3 +346,9 @@ Security monitoring is implemented through:
 - **CloudTrail**: AWS API call auditing
 - **API Gateway Access Logs**: API request logging
 - **Cognito Event Logging**: Authentication event tracking
+
+## Permissions Governance
+
+For ownership, guardrails, discoverability, and versioning of IAM policies and contracts, see the dedicated guide:
+
+- [Permissions Governance](./permissions-governance.md)

@@ -2,6 +2,10 @@
 
 This document details the authorization mechanisms specific to merchant users in the Super-Deals application. It covers the complete flow from sign-up to resource access, focusing on the permissions and access patterns available to merchants.
 
+> Note
+>
+> This guide complements the cross-service flow documented in `docs/guides/auth/end-to-end-auth.md` (users-ms → deals-ms via SSM/infra-contracts). API Gateway authorizationScopes must use slash-form scope strings: `${resourceServerIdentifier}/${scopeName}` (e.g., `deals-dev/write`).
+
 ## Table of Contents
 
 1. [Merchant User Journey](#merchant-user-journey)
@@ -103,11 +107,11 @@ This role provides:
 
 ### OAuth Scopes
 
-Merchants receive specific OAuth scopes in their access tokens:
+Merchants receive specific OAuth scopes in their access tokens (slash-form expected by API Gateway):
 
-- `deals:read`: Permission to view deals
-- `deals:write`: Permission to create and update deals
-- `deals:delete`: Permission to delete deals
+- `deals-dev/read`: Permission to view deals
+- `deals-dev/write`: Permission to create and update deals
+- `deals-dev/delete`: Permission to delete deals
 
 These scopes are enforced at the API Gateway level.
 
@@ -143,6 +147,8 @@ Merchants access APIs through protected endpoints:
 - **Validation**: Request validation at API Gateway
 - **Endpoint Pattern**: `/merchants/*` for merchant-specific operations
 
+> BFF note: If a Backend-for-Frontend (BFF) is used with secure HTTP-only cookies, the browser sends only the session cookie to the BFF. The BFF then injects the `Authorization: Bearer <access_token>` header when calling the protected deals-ms API. This works seamlessly with API Gateway’s Cognito authorizer and scope checks.
+
 ### Database Access Pattern
 
 Merchants access database resources indirectly through APIs:
@@ -160,9 +166,9 @@ Merchants have access to specific API scopes defined in the OAuth configuration:
 
 | Scope | Description | Endpoints | Actions |
 |-------|-------------|-----------|---------|
-| `deals:read` | Read access to deals | `GET /merchants/{userId}/deals` | List, view deals |
-| `deals:write` | Write access to deals | `POST /merchants/{userId}/deals` | Create, update deals |
-| `deals:delete` | Delete access to deals | `DELETE /merchants/{userId}/deals/{dealId}` | Delete deals |
+| `deals-dev/read` | Read access to deals | `GET /merchants/{userId}/deals` | List, view deals |
+| `deals-dev/write` | Write access to deals | `POST /merchants/{userId}/deals` | Create, update deals |
+| `deals-dev/delete` | Delete access to deals | `DELETE /merchants/{userId}/deals/{dealId}` | Delete deals |
 
 ### Scope Implementation
 
@@ -193,7 +199,7 @@ dealsResource.addMethod(
   "POST",
   new LambdaIntegration(lambda.merchants.deals.create.function),
   {
-    ...http.optionsWithAuth.writeDealsAuth, // Use write scope for deal creation
+    ...http.optionsWithAuth.writeDealsAuth, // Uses slash-form scope e.g., deals-dev/write
   }
 );
 ```

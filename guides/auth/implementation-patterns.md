@@ -2,6 +2,10 @@
 
 This document details the key implementation patterns used in the Super-Deals application for authentication and authorization. It provides practical guidance on how these patterns are implemented and how they can be extended for future requirements.
 
+> Note
+>
+> This guide complements the end-to-end flow documented in `docs/guides/auth/end-to-end-auth.md` (users-ms → deals-ms via SSM/infra-contracts). When configuring API Gateway, always use slash-form OAuth scopes: `${resourceServerIdentifier}/${scopeName}` (e.g., `deals-dev/write`). Historical snippets that show `deals:write` are legacy and should be interpreted as slash-form for API Gateway.
+
 ## Table of Contents
 
 1. [Direct S3 Upload Pattern](#direct-s3-upload-pattern)
@@ -32,7 +36,8 @@ const merchantS3Policy = new PolicyStatement({
   resources: [`${storage.s3Bucket.bucketArn}/merchants/*`],
 });
 
-iam.roles.merchant.addToPolicy(merchantS3Policy);
+// For imported roles (from users-ms via SSM/infra-contracts), attach with addToPrincipalPolicy
+iam.roles.merchant.addToPrincipalPolicy(merchantS3Policy);
 ```
 
 #### 2. Frontend Credential Acquisition
@@ -170,24 +175,24 @@ Authorization options are created for different operations:
 ```javascript
 // In backend/lib/permissions/oauth-permissions/deals/construct.js
 getAuthOptions(authorizerId) {
-  const scopeNames = this.getScopeNames();
   const baseAuth = {
     authorizationType: 'COGNITO_USER_POOLS',
     authorizer: { authorizerId }
   };
 
+  // Use slash-form scopes expected by API Gateway (replace env identifier accordingly)
   return {
     readDealsAuth: {
       ...baseAuth,
-      authorizationScopes: [scopeNames.find(scope => scope === 'deals:read')]
+      authorizationScopes: ['deals-dev/read']
     },
     writeDealsAuth: {
       ...baseAuth,
-      authorizationScopes: [scopeNames.find(scope => scope === 'deals:write')]
+      authorizationScopes: ['deals-dev/write']
     },
     deleteDealsAuth: {
       ...baseAuth,
-      authorizationScopes: [scopeNames.find(scope => scope === 'deals:delete')]
+      authorizationScopes: ['deals-dev/delete']
     }
   };
 }
@@ -683,8 +688,9 @@ To add new user types (e.g., Admins, Customers):
        `${storage.s3Bucket.bucketArn}/*`,
      ],
    });
-   
-   iam.roles.admin.addToPolicy(adminPolicy);
+
+   // For imported roles, use addToPrincipalPolicy
+   iam.roles.admin.addToPrincipalPolicy(adminPolicy);
    ```
 
 5. **Update Email Templates**:
