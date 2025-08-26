@@ -15,6 +15,7 @@ This document details the key implementation patterns used in the Super-Deals ap
 5. [Multi-Step Form with Auth State Pattern](#multi-step-form-with-auth-state-pattern)
 6. [Custom Email Templates Pattern](#custom-email-templates-pattern)
 7. [Extending the Authorization System](#extending-the-authorization-system)
+8. [Four-Layer Validation (Defense-in-Depth)](#four-layer-validation-defense-in-depth)
 
 ## Direct S3 Upload Pattern
 
@@ -49,17 +50,16 @@ The frontend acquires temporary AWS credentials:
 export async function load({ cookies, locals }) {
   // Verify authentication and authorization
   if (!Utils.auth.isMerchant(session) || !Utils.auth.canWriteDeals(session)) {
-    throw error(403, 'Insufficient permissions to create deals');
+    throw error(403, "Insufficient permissions to create deals");
   }
 
   // Get credentials from Amplify
   const { credentials } = await fetchAuthSession();
-  
+
   return {
     userId: user.userId,
     credentials,
-    dealId: KSUID.randomSync(new Date()).string,
-    s3BucketName: backendOutputs.S3BucketName
+    s3BucketName: backendOutputs.S3BucketName,
   };
 }
 ```
@@ -71,27 +71,29 @@ The frontend uploads files directly to S3:
 ```javascript
 // In +page.svelte
 const s3Client = new S3Client({
-  region: 'us-east-1',
+  region: "us-east-1",
   credentials: {
     accessKeyId: credentials.accessKeyId,
     secretAccessKey: credentials.secretAccessKey,
-    sessionToken: credentials.sessionToken
-  }
+    sessionToken: credentials.sessionToken,
+  },
 });
 
 // Generate a unique key for the file
 const fileKey = `merchants/${userId}/deals/DEAL-${dealId}/logo/${file.name}`;
 
-await s3Client.send(new PutObjectCommand({
-  Bucket: s3BucketName,
-  Key: fileKey,
-  Body: file,
-  ContentType: file.type
-}));
+await s3Client.send(
+  new PutObjectCommand({
+    Bucket: s3BucketName,
+    Key: fileKey,
+    Body: file,
+    ContentType: file.type,
+  })
+);
 
 // Send only the file reference to the API
-formData.delete('logo');
-formData.set('logoFileKey', fileKey);
+formData.delete("logo");
+formData.set("logoFileKey", fileKey);
 ```
 
 #### 4. Backend Reference Storage
@@ -108,12 +110,12 @@ const deal = {
   merchantId: userId,
   logoUrl: logoFileKey,
   ...dealData,
-  createdAt: new Date().toISOString()
+  createdAt: new Date().toISOString(),
 };
 
 await dynamoDb.put({
   TableName: process.env.DEALS_TABLE,
-  Item: deal
+  Item: deal,
 });
 ```
 
@@ -148,20 +150,20 @@ Resource servers define available scopes:
 // In backend/lib/auth/user-pool/resource-servers/deals/construct.js
 this.scopes = [
   new ResourceServerScope({
-    scopeName: 'read',
-    scopeDescription: 'Read access to deals'
+    scopeName: "read",
+    scopeDescription: "Read access to deals",
   }),
   new ResourceServerScope({
-    scopeName: 'write',
-    scopeDescription: 'Write access to deals'
+    scopeName: "write",
+    scopeDescription: "Write access to deals",
   }),
   new ResourceServerScope({
-    scopeName: 'delete',
-    scopeDescription: 'Delete access to deals'
-  })
+    scopeName: "delete",
+    scopeDescription: "Delete access to deals",
+  }),
 ];
 
-this.resourceServer = new UserPoolResourceServer(this, 'ResourceServer', {
+this.resourceServer = new UserPoolResourceServer(this, "ResourceServer", {
   userPool,
   identifier: `deals-${envName}`,
   scopes: this.scopes,
@@ -224,10 +226,14 @@ API Gateway validates tokens and scopes:
 
 ```javascript
 // In backend/lib/api/http/authorization/construct.js
-this.authorizer = new CognitoUserPoolsAuthorizer(this, "CognitoUserPoolsAuthorizer", {
-  cognitoUserPools: [auth.userPool.pool],
-  identitySource: "method.request.header.Authorization",
-});
+this.authorizer = new CognitoUserPoolsAuthorizer(
+  this,
+  "CognitoUserPoolsAuthorizer",
+  {
+    cognitoUserPools: [auth.userPool.pool],
+    identitySource: "method.request.header.Authorization",
+  }
+);
 ```
 
 ### Benefits
@@ -258,11 +264,11 @@ User groups are defined in Cognito:
 
 ```javascript
 // In backend/lib/auth/user-groups/stack.js
-new CfnUserPoolGroup(this, 'MerchantsGroup', {
+new CfnUserPoolGroup(this, "MerchantsGroup", {
   userPoolId: userPool.pool.userPoolId,
-  groupName: 'Merchants',
-  description: 'Group for merchant users',
-  precedence: 1
+  groupName: "Merchants",
+  description: "Group for merchant users",
+  precedence: 1,
 });
 ```
 
@@ -272,7 +278,7 @@ IAM roles are mapped to Cognito groups:
 
 ```javascript
 // In backend/lib/iam/roles/stack.js
-new CfnIdentityPoolRoleAttachment(this, 'IdentityPoolRoleAttachment', {
+new CfnIdentityPoolRoleAttachment(this, "IdentityPoolRoleAttachment", {
   identityPoolId: auth.identityPool.pool.ref,
   roles: {
     authenticated: this.authenticated.roleArn,
@@ -280,21 +286,21 @@ new CfnIdentityPoolRoleAttachment(this, 'IdentityPoolRoleAttachment', {
   },
   roleMappings: {
     [roleMappingsKey.ref]: {
-      type: 'Rules',
-      ambiguousRoleResolution: 'Deny',
+      type: "Rules",
+      ambiguousRoleResolution: "Deny",
       identityProvider: `${auth.userPool.pool.userPoolProviderName}:${auth.userPool.poolClient.userPoolClientId}`,
       rulesConfiguration: {
         rules: [
           {
-            claim: 'cognito:groups',
-            matchType: 'Contains',
-            value: 'Merchants',
-            roleArn: this.merchant.roleArn
-          }
-        ]
-      }
-    }
-  }
+            claim: "cognito:groups",
+            matchType: "Contains",
+            value: "Merchants",
+            roleArn: this.merchant.roleArn,
+          },
+        ],
+      },
+    },
+  },
 });
 ```
 
@@ -308,7 +314,7 @@ await cognitoClient.send(
   new AdminAddUserToGroupCommand({
     UserPoolId: userPoolId,
     Username: username,
-    GroupName: 'Merchants'
+    GroupName: "Merchants",
   })
 );
 ```
@@ -356,10 +362,14 @@ A Cognito authorizer is created:
 
 ```javascript
 // In backend/lib/api/http/authorization/construct.js
-this.authorizer = new CognitoUserPoolsAuthorizer(this, "CognitoUserPoolsAuthorizer", {
-  cognitoUserPools: [auth.userPool.pool],
-  identitySource: "method.request.header.Authorization",
-});
+this.authorizer = new CognitoUserPoolsAuthorizer(
+  this,
+  "CognitoUserPoolsAuthorizer",
+  {
+    cognitoUserPools: [auth.userPool.pool],
+    identitySource: "method.request.header.Authorization",
+  }
+);
 this.authorizer._attachToApi(restApi);
 ```
 
@@ -386,6 +396,7 @@ dealsResource.addMethod(
 #### 3. Token Validation
 
 API Gateway validates tokens automatically:
+
 - Verifies token signature
 - Checks token expiration
 - Validates required scopes
@@ -405,8 +416,8 @@ if (userId !== merchantId) {
   return {
     statusCode: 403,
     body: JSON.stringify({
-      message: "Forbidden: Cannot access another merchant's resources"
-    })
+      message: "Forbidden: Cannot access another merchant's resources",
+    }),
   };
 }
 ```
@@ -440,9 +451,9 @@ Form state is stored in cookies:
 ```javascript
 // In +page.server.js
 cookies.set(`signup_${key}`, value, {
-  path: '/',
+  path: "/",
   maxAge: 60 * 30, // 30 minutes
-  httpOnly: false
+  httpOnly: false,
 });
 ```
 
@@ -453,26 +464,26 @@ Each step is validated independently:
 ```javascript
 // In +page.server.js
 const formData = await request.formData();
-const step = formData.get('step');
+const step = formData.get("step");
 
-if (step === '1') {
+if (step === "1") {
   const result = step1Schema.safeParse({
-    businessName: formData.get('businessName'),
-    email: formData.get('email'),
-    password: formData.get('password'),
-    confirmPassword: formData.get('confirmPassword')
+    businessName: formData.get("businessName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
   });
-  
+
   if (!result.success) {
     return fail(400, { errors: result.error.flatten() });
   }
-  
+
   // Store validated data in cookies
   Object.entries(result.data).forEach(([key, value]) => {
     cookies.set(`signup_${key}`, value, {
-      path: '/',
+      path: "/",
       maxAge: 60 * 30,
-      httpOnly: false
+      httpOnly: false,
     });
   });
 }
@@ -484,43 +495,43 @@ On final step, all data is combined and submitted:
 
 ```javascript
 // In +page.server.js
-if (step === '3') {
+if (step === "3") {
   // Validate step 3
   if (!result.success) {
     return fail(400, { errors: result.error.flatten() });
   }
-  
+
   // Combine all steps from cookies
   const signupData = {
-    businessName: cookies.get('signup_businessName'),
-    email: cookies.get('signup_email'),
-    password: cookies.get('signup_password'),
+    businessName: cookies.get("signup_businessName"),
+    email: cookies.get("signup_email"),
+    password: cookies.get("signup_password"),
     // Add step 2 and 3 data
-    ...result.data
+    ...result.data,
   };
-  
+
   // Submit to API
   const response = await merchantService.signUp(signupData);
-  
+
   if (response.success) {
     // Clear cookies and redirect to verification page
-    Object.keys(signupData).forEach(key => {
+    Object.keys(signupData).forEach((key) => {
       cookies.delete(`signup_${key}`);
     });
-    
-    cookies.set('pendingConfirmation', signupData.email, {
-      path: '/',
+
+    cookies.set("pendingConfirmation", signupData.email, {
+      path: "/",
       maxAge: 60 * 30,
-      httpOnly: true
+      httpOnly: true,
     });
-    
-    cookies.set('userType', 'merchant', {
-      path: '/',
+
+    cookies.set("userType", "merchant", {
+      path: "/",
       maxAge: 60 * 30,
-      httpOnly: true
+      httpOnly: true,
     });
-    
-    return { success: true, redirect: '/auth/verification-sent' };
+
+    return { success: true, redirect: "/auth/verification-sent" };
   }
 }
 ```
@@ -567,7 +578,7 @@ The Lambda detects user type from attributes:
 // In backend/src/lambda/auth/custom-message/handler.js
 // Determine if the user is a merchant
 const userAttributes = event.request.userAttributes;
-const isMerchant = userAttributes['custom:userGroup'] === 'merchant';
+const isMerchant = userAttributes["custom:userGroup"] === "merchant";
 ```
 
 #### 3. Template Selection
@@ -577,7 +588,7 @@ Different templates are used based on user type:
 ```javascript
 // In backend/src/lambda/auth/custom-message/handler.js
 if (isMerchant) {
-  event.response.emailSubject = 'Verify your Super Deals Merchant Account';
+  event.response.emailSubject = "Verify your Super Deals Merchant Account";
   event.response.emailMessage = `
     <!DOCTYPE html>
     <html>
@@ -595,7 +606,7 @@ if (isMerchant) {
     </html>
   `;
 } else {
-  event.response.emailSubject = 'Verify your Super Deals Account';
+  event.response.emailSubject = "Verify your Super Deals Account";
   event.response.emailMessage = `
     <!DOCTYPE html>
     <html>
@@ -637,56 +648,56 @@ if (isMerchant) {
 To add new user types (e.g., Admins, Customers):
 
 1. **Create User Group**:
+
    ```javascript
-   new CfnUserPoolGroup(this, 'AdminsGroup', {
+   new CfnUserPoolGroup(this, "AdminsGroup", {
      userPoolId: userPool.pool.userPoolId,
-     groupName: 'Admins',
-     description: 'Group for admin users',
-     precedence: 0 // Lower precedence = higher priority
+     groupName: "Admins",
+     description: "Group for admin users",
+     precedence: 0, // Lower precedence = higher priority
    });
    ```
 
 2. **Create IAM Role**:
+
    ```javascript
-   this.admin = new Role(this, 'CognitoAdminRole', {
-     assumedBy: new FederatedPrincipal('cognito-identity.amazonaws.com', {
-       StringEquals: {
-         'cognito-identity.amazonaws.com:aud': auth.identityPool.pool.ref
+   this.admin = new Role(this, "CognitoAdminRole", {
+     assumedBy: new FederatedPrincipal(
+       "cognito-identity.amazonaws.com",
+       {
+         StringEquals: {
+           "cognito-identity.amazonaws.com:aud": auth.identityPool.pool.ref,
+         },
+         "ForAnyValue:StringLike": {
+           "cognito-identity.amazonaws.com:amr": "authenticated",
+         },
        },
-       'ForAnyValue:StringLike': {
-         'cognito-identity.amazonaws.com:amr': 'authenticated'
-       }
-     },
-       'sts:AssumeRoleWithWebIdentity'
-     )
+       "sts:AssumeRoleWithWebIdentity"
+     ),
    });
    ```
 
 3. **Add Role Mapping**:
+
    ```javascript
    rules: [
      {
-       claim: 'cognito:groups',
-       matchType: 'Contains',
-       value: 'Admins',
-       roleArn: this.admin.roleArn
+       claim: "cognito:groups",
+       matchType: "Contains",
+       value: "Admins",
+       roleArn: this.admin.roleArn,
      },
      // Existing rules...
-   ]
+   ];
    ```
 
 4. **Attach Permissions**:
+
    ```javascript
    const adminPolicy = new PolicyStatement({
      effect: Effect.ALLOW,
-     actions: [
-       "s3:PutObject",
-       "s3:GetObject",
-       "s3:ListBucket"
-     ],
-     resources: [
-       `${storage.s3Bucket.bucketArn}/*`,
-     ],
+     actions: ["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+     resources: [`${storage.s3Bucket.bucketArn}/*`],
    });
 
    // For imported roles, use addToPrincipalPolicy
@@ -695,7 +706,7 @@ To add new user types (e.g., Admins, Customers):
 
 5. **Update Email Templates**:
    ```javascript
-   if (userAttributes['custom:userGroup'] === 'admin') {
+   if (userAttributes["custom:userGroup"] === "admin") {
      // Admin-specific email template
    } else if (isMerchant) {
      // Merchant-specific email template
@@ -709,21 +720,22 @@ To add new user types (e.g., Admins, Customers):
 To add new protected APIs (e.g., Orders API):
 
 1. **Create Resource Server**:
+
    ```javascript
    // In a new file: backend/lib/auth/user-pool/resource-servers/orders/construct.js
    this.scopes = [
      new ResourceServerScope({
-       scopeName: 'read',
-       scopeDescription: 'Read access to orders'
+       scopeName: "read",
+       scopeDescription: "Read access to orders",
      }),
      new ResourceServerScope({
-       scopeName: 'write',
-       scopeDescription: 'Write access to orders'
+       scopeName: "write",
+       scopeDescription: "Write access to orders",
      }),
      // More scopes...
    ];
-   
-   this.resourceServer = new UserPoolResourceServer(this, 'ResourceServer', {
+
+   this.resourceServer = new UserPoolResourceServer(this, "ResourceServer", {
      userPool,
      identifier: `orders-${envName}`,
      scopes: this.scopes,
@@ -731,6 +743,7 @@ To add new protected APIs (e.g., Orders API):
    ```
 
 2. **Create OAuth Permissions**:
+
    ```javascript
    // In a new file: backend/lib/permissions/oauth-permissions/orders/construct.js
    getAuthOptions(authorizerId) {
@@ -739,7 +752,7 @@ To add new protected APIs (e.g., Orders API):
        authorizationType: 'COGNITO_USER_POOLS',
        authorizer: { authorizerId }
      };
-   
+
      return {
        readOrdersAuth: {
          ...baseAuth,
@@ -751,6 +764,7 @@ To add new protected APIs (e.g., Orders API):
    ```
 
 3. **Update Main OAuth Construct**:
+
    ```javascript
    // In backend/lib/permissions/oauth-permissions/construct.js
    this.orders = new OrdersOAuthPermissionsConstruct(this, "Orders", {
@@ -774,10 +788,11 @@ To add new protected APIs (e.g., Orders API):
 To add new API resources (e.g., Orders API):
 
 1. **Create API Resource**:
+
    ```javascript
    // In a new file: backend/lib/api/http/endpoints/merchants/orders/construct.js
-   const ordersResource = merchantsResource.addResource('orders');
-   
+   const ordersResource = merchantsResource.addResource("orders");
+
    // List orders endpoint
    ordersResource.addMethod(
      "GET",
@@ -787,9 +802,9 @@ To add new API resources (e.g., Orders API):
        ...http.optionsWithAuth.readOrdersAuth,
      }
    );
-   
+
    // Get order endpoint
-   const orderResource = ordersResource.addResource('{orderId}');
+   const orderResource = ordersResource.addResource("{orderId}");
    orderResource.addMethod(
      "GET",
      new LambdaIntegration(lambda.merchants.orders.get.function),
@@ -806,7 +821,7 @@ To add new API resources (e.g., Orders API):
    new MerchantsOrdersConstruct(this, "MerchantsOrders", {
      lambda,
      http,
-     merchantsResource
+     merchantsResource,
    });
    ```
 
@@ -818,3 +833,92 @@ To add new API resources (e.g., Orders API):
 4. **Test authorization rules** comprehensively
 5. **Maintain separation of concerns** between different authorization mechanisms
 6. **Use descriptive names** for roles, groups, and scopes
+
+## Four-Layer Validation (Defense-in-Depth)
+
+### Overview
+
+Apply validation at multiple boundaries to improve security, UX, and resilience. The same core rules are enforced four times so that a failure in one layer is still caught by the next.
+
+Layers:
+- Client (Svelte form + schema)
+- Server Action (`+page.server.js`)
+- API Gateway (request model)
+- Lambda/domain (types and business rules)
+
+### 1) Client-Side Validation (Svelte)
+
+Purpose: Fast feedback and better UX. Never rely on client-only checks for security.
+
+Key rules enforced in `web/src/routes/merchants/[id]/deals/create/+page.svelte` and `schema.js`:
+- Required fields: `title`, `originalPrice`, `category`, `logo`/`logoFileKey`, `expiration`.
+- `discount` computed from UI fields and clamped `0–100`.
+- File checks before S3 upload: type and size.
+- End date rule: at least 7 days from today.
+
+Example (derive discount and replace file with S3 key):
+```js
+// +page.svelte (excerpt)
+formData.set('discount', String(Math.min(Math.max(pct, 0), 100)));
+await s3Client.send(new PutObjectCommand({ Bucket, Key, Body: file }));
+formData.delete('logo');
+formData.set('logoFileKey', Key);
+```
+
+### 2) Server Action Validation (`+page.server.js`)
+
+Purpose: Trust boundary on our origin. Normalize and validate again before calling the API.
+
+Key rules enforced in `web/src/routes/merchants/[id]/deals/create/+page.server.js`:
+- Inject `userId` from the ID token: `formData.set('userId', decoded.sub)`.
+- Validate with Zod schema from `schema.js` using `safeParse(formData)`.
+- Optionally strip unknown fields before sending to the API.
+
+```js
+const decoded = jwtDecode(idToken);
+formData.set('userId', decoded.sub);
+const result = schema.safeParse(formData);
+if (!result.success) return fail(400, { errors: result.error.flatten().fieldErrors });
+```
+
+### 3) API Gateway Request Validation
+
+Purpose: Block malformed requests before Lambda executes.
+
+Location: `deals-ms/lib/api/endpoints/deals/post/schema.ts`.
+
+Typical rules:
+- Require: `userId`, `title`, `originalPrice`, `discount` (0–100), `category`, `logoFileKey`, `expiration` (RFC3339).
+- Reject unknown types and invalid ranges.
+
+```ts
+// JSON schema model attached to POST /merchants/{userId}/deals
+// Ensures discount is within [0,100] and required fields are present
+```
+
+### 4) Lambda/Domain Validation
+
+Purpose: Final authority for business invariants and authorization checks.
+
+Locations:
+- Handler: `deals-ms/src/services/create-deal/lambda-handler.ts`
+- Types: `deals-ms/src/types/deal-entity.ts`
+
+Typical rules:
+- Path `userId` must match token subject (from authorizer claims).
+- Re-validate payload against domain types; compute server-side fields; ignore/strip unknowns.
+
+```ts
+// lambda-handler.ts (conceptual)
+const claimsUserId = event.requestContext.authorizer.claims.sub;
+const pathUserId = event.pathParameters.userId;
+if (claimsUserId !== pathUserId) return { statusCode: 403 };
+// Validate discount range, required fields, and construct entity
+```
+
+### Why this matters
+
+- Security-by-default: Multiple gates reduce risk.
+- Better UX: Immediate client feedback plus precise server errors.
+- Robustness: Infra-level validation (API Gateway) shields Lambda from bad input.
+- Consistency: Domain types ensure data integrity at rest.

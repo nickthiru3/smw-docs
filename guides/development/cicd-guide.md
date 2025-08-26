@@ -276,7 +276,6 @@ npm run localstack:stop           # Stop LocalStack container
 ```
 
 ### Configuration Management
-
 #### Environment-Specific Configuration
 
 The project automatically loads LocalStack configuration when `ENV_NAME=localstack`:

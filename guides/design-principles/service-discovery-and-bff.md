@@ -17,12 +17,30 @@ Each microservice exposes a well-known endpoint:
 
 ### Binding sources
 
-- Primary: SSM Parameter Store under `/super-deals/{env}/{service}/public`.
+- Primary: SSM Parameter Store under `{APP_BASE_PATH}/{env}/{service}/public`.
 - Fallback: environment variables if SSM path is not set or empty.
+
+#### Base path resolution (standard)
+
+To avoid hardcoding, the SSM base path is resolved with the following precedence:
+
+1. `APP_BASE_PATH` environment variable (recommended)
+2. `parameterStorePrefix` from service config (legacy/back-compat)
+3. Fallback: `/super-deals`
+
+The final public path is constructed as:
+
+```
+{APP_BASE_PATH}/{ENV_NAME}/{SERVICE_NAME}/public
+```
+
+Notes:
+- `SERVICE_NAME` should be set per service (e.g., `deals-ms`, `users-ms`).
+- Private bindings must use the matching `.../private` path and are never exposed by discovery endpoints.
 
 ### SSM layout (public)
 
-- users-ms: `/super-deals/{env}/users-ms/public`
+- users-ms: `{APP_BASE_PATH}/{env}/users-ms/public`
   - `auth/userPoolId`
   - `auth/userPoolClientId`
   - `auth/identityPoolId`
@@ -31,17 +49,18 @@ Each microservice exposes a well-known endpoint:
   - `auth/oauthTokenUrl`
   - `region`
 
-- deals-ms: `/super-deals/{env}/deals-ms/public`
+- deals-ms: `{APP_BASE_PATH}/{env}/deals-ms/public`
   - `api/baseUrl` (published by API Stage construct)
   - `region`
 
-Private bindings (e.g., secrets) should be stored under `/super-deals/{env}/{service}/private` and are not exposed by the `/.well-known/bindings` endpoint.
+Private bindings (e.g., secrets) should be stored under `{APP_BASE_PATH}/{env}/{service}/private` and are not exposed by the `/.well-known/bindings` endpoint.
 
 ## CDK implementation summary
 
 - For each service:
   - A Lambda handler `src/services/services-discovery/lambda-handler.ts` reads SSM via `@aws-sdk/client-ssm` (`GetParametersByPath`) with `SSM_PUBLIC_PATH`.
-  - IAM permission added to the Lambda for `ssm:GetParametersByPath` on the configured path.
+  - `SSM_PUBLIC_PATH` is injected from CDK using the resolved base path formula above.
+  - IAM permission is added to the Lambda for `ssm:GetParametersByPath` on `arn:aws:ssm:*:*:parameter{SSM_PUBLIC_PATH}*`.
   - An endpoint construct wires `GET /.well-known/bindings` to the discovery Lambda.
   - An SSM publication helper publishes public values on synth:
     - users-ms: `lib/services/services-discovery/ssm-publication.ts` used by `lib/services/construct.ts`.

@@ -216,6 +216,31 @@ npm run localstack:stop
 
 ### Configuration Management
 
+#### SSM Parameter Path Standardization
+
+To avoid hardcoding SSM paths, all services resolve their public/private binding base path using this precedence:
+
+1. `APP_BASE_PATH` (env) — preferred
+2. `parameterStorePrefix` (service config; legacy/back-compat)
+3. Fallback: `/super-deals`
+
+Construct paths as:
+
+```
+{APP_BASE_PATH}/{ENV_NAME}/{SERVICE_NAME}/public
+{APP_BASE_PATH}/{ENV_NAME}/{SERVICE_NAME}/private
+```
+
+Required variables:
+- `ENV_NAME` (e.g., `local`, `staging`, `prod`)
+- `SERVICE_NAME` (e.g., `deals-ms`, `users-ms`)
+
+Optional variables:
+- `APP_BASE_PATH` (e.g., `/super-deals`) — overrides config when set
+- `PARAMETER_STORE_PREFIX` — maps to `parameterStorePrefix` when `APP_BASE_PATH` is not set
+
+CDK injects `SSM_PUBLIC_PATH` into discovery Lambdas and scopes IAM to `arn:aws:ssm:*:*:parameter{SSM_PUBLIC_PATH}*`.
+
 **LocalStack Configuration:**
 
 ```typescript
