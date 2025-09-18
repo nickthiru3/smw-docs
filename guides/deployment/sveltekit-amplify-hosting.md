@@ -1,0 +1,350 @@
+# Deploying SvelteKit with AWS Amplify Hosting
+
+This guide provides detailed instructions for deploying a SvelteKit application with AWS Amplify Hosting. It covers configuration, build setup, deployment, and troubleshooting.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [SvelteKit Configuration](#sveltekit-configuration)
+- [AWS Amplify Configuration](#aws-amplify-configuration)
+- [Environment Variables](#environment-variables)
+- [Automated Environment Configuration](#automated-environment-configuration)
+- [Deployment Process](#deployment-process)
+- [Manual Deployment](#manual-deployment)
+- [Custom Domain Setup](#custom-domain-setup)
+- [Troubleshooting](#troubleshooting)
+- [References](#references)
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+- Node.js (v16 or later) and npm installed
+- AWS CLI configured with appropriate credentials
+- AWS Amplify CLI installed (`npm install -g @aws-amplify/cli`)
+- A SvelteKit project (using Svelte 5 with runes)
+
+## SvelteKit Configuration
+
+SvelteKit requires specific configuration to work with AWS Amplify Hosting. The key is to use the static adapter with SPA fallback.
+
+### 1. Install the Static Adapter
+
+```bash
+npm install --save-dev @sveltejs/adapter-static
+```
+
+### 2. Configure svelte.config.js
+
+Update your `svelte.config.js` file to use the static adapter with SPA fallback:
+
+```javascript
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+  preprocess: vitePreprocess(),
+  
+  kit: {
+    adapter: adapter({
+      // Static adapter options
+      pages: 'build',
+      assets: 'build',
+      fallback: 'index.html', // Important for SPA-style routing
+      precompress: false
+    }),
+    
+    // Optional: Configure paths
+    paths: {
+      base: ''
+    }
+  },
+  
+  // Enable Svelte 5 runes
+  compilerOptions: {
+    runes: true
+  }
+};
+
+export default config;
+```
+
+### 3. Configure SPA Mode
+
+Create or update your `src/routes/+layout.js` or `src/routes/+layout.ts` file:
+
+```javascript
+export const prerender = true;
+export const ssr = false;
+```
+
+## AWS Amplify Configuration
+
+### 1. Initialize Amplify
+
+If you haven't already initialized Amplify in your project:
+
+```bash
+amplify init
+```
+
+Follow the prompts to set up your Amplify project.
+
+### 2. Add Hosting
+
+```bash
+amplify add hosting
+```
+
+Choose the following options:
+- Select "Amazon CloudFront and S3"
+- For the environment, choose "DEV (S3 with CloudFront using HTTPS)"
+- For the bucket name, you can use the default or specify a custom name
+
+### 3. Configure Amplify in Your SvelteKit App
+
+Create a configuration file at `src/lib/config/amplify.js`:
+
+```javascript
+// AWS Amplify configuration for SvelteKit
+import { Amplify } from 'aws-amplify';
+
+/**
+ * Configure AWS Amplify with environment variables
+ * @param {Object} config - Additional configuration options
+ */
+export function configureAmplify(config = {}) {
+  const amplifyConfig = {
+    Auth: {
+      Cognito: {
+        userPoolId: import.meta.env.VITE_USER_POOL_ID,
+        userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID,
+        identityPoolId: import.meta.env.VITE_IDENTITY_POOL_ID,
+        loginWith: { email: true }
+      }
+    },
+    API: {
+      REST: {
+        api: {
+          endpoint: import.meta.env.VITE_API_URL,
+          region: 'us-east-1'
+        }
+      }
+    },
+    ...config
+  };
+
+  Amplify.configure(amplifyConfig);
+}
+```
+
+### 4. Initialize Amplify in Your App
+
+In your `src/routes/+layout.svelte` file:
+
+```svelte
+<script>
+  import { configureAmplify } from '$lib/config/amplify';
+  import '../app.css';
+  
+  // Initialize Amplify when the app starts
+  configureAmplify();
+</script>
+
+<slot />
+```
+
+## Environment Variables
+
+Create a `.env.local` file in your project root with the following variables:
+
+```
+# API Configuration
+VITE_API_URL=https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev/
+
+# Cognito User Pool Information
+VITE_USER_POOL_ID=us-east-1_XXXXXXXXX
+VITE_USER_POOL_CLIENT_ID=XXXXXXXXXXXXXXXXXX
+VITE_IDENTITY_POOL_ID=us-east-1:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+
+# Amplify Hosting URL (for email verification links)
+VITE_SITE_URL=https://your-cloudfront-url.cloudfront.net
+```
+
+Also create a `.env.example` file with the same structure but without sensitive values, to be committed to version control.
+
+## Automated Environment Configuration
+
+This project includes an automated script that reads AWS resource information from the CDK outputs and updates the environment variables accordingly. This ensures that your frontend always has the correct backend resource information without manual updates.
+
+### How It Works
+
+The `scripts/update-env.js` script:
+1. Reads the AWS resource information from `backend/outputs.json` (generated by CDK)
+2. Updates your `.env.local` file with the latest values
+3. Preserves important values like `VITE_SITE_URL` for deployment URLs
+
+### Usage
+
+The script is integrated into the development workflow:
+
+```bash
+# Run manually to update environment variables
+npm run update-env
+
+# Automatically runs before these commands
+npm run dev     # For local development
+npm run build   # For production builds
+```
+
+### When to Use
+
+- **After CDK Deployment**: When you deploy or update backend resources with CDK, run `npm run update-env` to update your frontend configuration
+- **Team Collaboration**: New team members can simply run `npm run update-env` to configure their local environment
+- **CI/CD Pipeline**: Include the script in your CI/CD pipeline to ensure deployed applications have the correct configuration
+
+### Configuration
+
+The script looks for these resources in the `outputs.json` file:
+
+```javascript
+// Resource paths in outputs.json
+const userPoolId = outputsData.BackendStackDevAuthStackUserPoolStackD90C0FF4?.UserPoolId;
+const userPoolClientId = outputsData.BackendStackDevAuthStackUserPoolStackD90C0FF4?.UserPoolClientId;
+const identityPoolId = outputsData.BackendStackDevAuthStackIdentityPoolStack0DECD2C0?.IdentityPoolId;
+const apiUrl = outputsData.BackendStackDevApiStackHttpStackB0C9C4D3?.RestApiUrldev;
+```
+
+If your CDK stack structure differs, update these paths in the script.
+
+## Deployment Process
+
+### 1. Build Your SvelteKit App
+
+```bash
+npm run build
+```
+
+This will generate the build files in the `build` directory.
+
+### 2. Publish with Amplify
+
+```bash
+amplify publish
+```
+
+This command will:
+1. Build your application (which we've already done)
+2. Create or update the necessary AWS resources
+3. Upload your build files to the S3 bucket
+4. Configure CloudFront distribution
+
+> **Note**: The first deployment can take 10-15 minutes, primarily because CloudFront distributions take time to propagate globally.
+
+### 3. Update Environment Variables
+
+After deployment, update your `.env.local` file with the CloudFront URL provided in the deployment output:
+
+```
+VITE_SITE_URL=https://your-cloudfront-url.cloudfront.net
+```
+
+## Manual Deployment
+
+If you encounter issues with the `amplify publish` command, you can manually deploy your SvelteKit application:
+
+### 1. Find Your S3 Bucket Name
+
+```bash
+aws s3 ls
+```
+
+Look for a bucket with a name like `sveltekit-YYYYMMDDHHMMSS-hostingbucket-dev`.
+
+### 2. Upload Files to S3
+
+```bash
+aws s3 sync build s3://your-bucket-name --delete
+```
+
+This command uploads your build files to the S3 bucket and removes any files that no longer exist in your build directory.
+
+### 3. Invalidate CloudFront Cache (Optional)
+
+If you're updating an existing deployment:
+
+```bash
+aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
+```
+
+Replace `YOUR_DISTRIBUTION_ID` with your CloudFront distribution ID.
+
+## Custom Domain Setup
+
+To use a custom domain with your deployed SvelteKit application:
+
+### 1. Register a Domain (if you don't have one)
+
+Use Amazon Route 53 or another domain registrar.
+
+### 2. Create an SSL Certificate
+
+In AWS Certificate Manager (ACM):
+1. Request a certificate for your domain
+2. Validate ownership via DNS validation or email
+3. Wait for certificate issuance
+
+### 3. Configure CloudFront
+
+1. Go to the CloudFront console
+2. Select your distribution
+3. Go to "General" tab and click "Edit"
+4. Under "Alternate Domain Names (CNAMEs)", add your custom domain
+5. Under "SSL Certificate", select "Custom SSL Certificate" and choose your certificate
+6. Save changes
+
+### 4. Configure DNS
+
+In your DNS provider (e.g., Route 53):
+1. Create a CNAME record pointing your domain to your CloudFront distribution domain
+2. If using Route 53, you can create an A record with Alias to the CloudFront distribution
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Issue: "Cannot find the distribution folder"
+
+**Solution**: The Amplify CLI is looking for the distribution folder at a different path than where SvelteKit builds to. Use the manual deployment method described above.
+
+#### Issue: Authentication Redirect Issues
+
+**Solution**: Ensure your Cognito User Pool has the correct callback URLs configured, including your CloudFront URL.
+
+#### Issue: CORS Errors
+
+**Solution**: Update your API Gateway CORS configuration to include your CloudFront domain in the allowed origins.
+
+#### Issue: 404 Errors on Page Refresh
+
+**Solution**: Ensure your `svelte.config.js` has the `fallback: 'index.html'` option set in the adapter configuration.
+
+#### Issue: Environment Variables Not Available
+
+**Solution**: Ensure all environment variables are prefixed with `VITE_` to make them available to the client-side code.
+
+## References
+
+- [SvelteKit Documentation](https://kit.svelte.dev/docs/introduction)
+- [Svelte 5 Runes Documentation](https://svelte.dev/blog/runes)
+- [AWS Amplify Documentation](https://docs.amplify.aws/)
+- [AWS CloudFront Documentation](https://docs.aws.amazon.com/cloudfront/)
+- [AWS S3 Documentation](https://docs.aws.amazon.com/s3/)
+- [AWS Cognito Documentation](https://docs.aws.amazon.com/cognito/)
+
+## Conclusion
+
+By following this guide, you should have successfully deployed your SvelteKit application with AWS Amplify Hosting. The combination of SvelteKit's static adapter and AWS Amplify's hosting capabilities provides a robust, scalable, and secure hosting solution for your web applications.
+
+Remember to update your environment variables after deployment and test your authentication flows to ensure everything works correctly with the deployed application.

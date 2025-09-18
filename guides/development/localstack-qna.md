@@ -242,7 +242,7 @@ LocalStack's free tier enables rapid local development for most core AWS service
 
 ---
 
-# what if a service that i want to use needs to paid version? i have an aws free-tier account. what if the service i want to use is available in the aws free-tier? can i combine the use of locastack with the aws free-tier account?
+# what if a service that i want to use needs the paid version? i have an aws free-tier account. what if the service i want to use is available in the aws free-tier? can i combine the use of locastack with the aws free-tier account?
 
 Yes, you can **combine LocalStack with your AWS free-tier account** to optimize both local development and cloud testing, especially if some of the AWS services you need are only available in LocalStack’s paid tier or not fully emulated.
 
@@ -593,30 +593,30 @@ The project uses a sophisticated configuration system that automatically loads e
 ```typescript
 // config/localstack.ts
 export const localstackConfig: Config = {
-  envName: 'localstack',
-  
+  envName: "localstack",
+
   // AWS configuration for LocalStack
   aws: {
-    region: 'us-east-1',
-    profile: 'localstack'
+    region: "us-east-1",
+    profile: "localstack",
   },
-  
+
   // LocalStack endpoints
   endpoints: {
-    dynamodb: 'http://localhost:4566',
-    s3: 'http://localhost:4566',
-    lambda: 'http://localhost:4566',
-    apigateway: 'http://localhost:4566',
+    dynamodb: "http://localhost:4566",
+    s3: "http://localhost:4566",
+    lambda: "http://localhost:4566",
+    apigateway: "http://localhost:4566",
     // ... all services point to LocalStack gateway
   },
-  
+
   // Development-specific settings
   development: {
     enableDebugLogs: true,
     lambdaTimeout: 30,
     enableHotReload: true,
-    skipValidations: true
-  }
+    skipValidations: true,
+  },
 };
 ```
 
@@ -624,13 +624,13 @@ export const localstackConfig: Config = {
 
 ```yaml
 # docker-compose.localstack.yml
-version: '3.8'
+version: "3.8"
 services:
   localstack:
     container_name: super-deals-localstack
     image: localstack/localstack:latest
     ports:
-      - "4566:4566"  # LocalStack Gateway
+      - "4566:4566" # LocalStack Gateway
     environment:
       - SERVICES=lambda,dynamodb,s3,apigateway,sns,sqs,cloudwatch,logs,iam,sts,cloudformation
       - DEBUG=0
@@ -646,12 +646,14 @@ services:
 LocalStack Community Edition provides the following AWS services for our microservice:
 
 ### Core Services
+
 - **✅ Lambda**: Serverless functions
 - **✅ API Gateway**: REST API endpoints
 - **✅ DynamoDB**: NoSQL database
 - **✅ S3**: Object storage for file uploads
 
 ### Supporting Services
+
 - **✅ SNS/SQS**: Messaging and notifications
 - **✅ CloudWatch**: Monitoring and logging
 - **✅ IAM**: Identity and access management
@@ -673,35 +675,39 @@ aws --endpoint-url=http://localhost:4566 lambda list-functions --profile localst
 ### Daily Development Process
 
 1. **Start LocalStack**
+
    ```bash
    npm run localstack:start
    ```
 
 2. **Deploy Infrastructure**
+
    ```bash
    npm run deploy:localstack
    ```
 
 3. **Develop and Test**
+
    ```bash
    # Run application
    npm run dev:localstack
-   
+
    # Run tests
    npm run test:localstack
-   
+
    # Make changes and redeploy as needed
    npm run deploy:localstack
    ```
 
 4. **Debug and Monitor**
+
    ```bash
    # Check service health
    npm run localstack:health
-   
+
    # View logs
    npm run localstack:logs
-   
+
    # Check running services
    npm run localstack:status
    ```
@@ -729,12 +735,14 @@ cdklocal diff
 ## Testing Strategy
 
 ### Unit Tests
+
 ```bash
 # Run unit tests with LocalStack configuration
 ENV_NAME=localstack npm test
 ```
 
 ### Integration Tests
+
 ```bash
 # Start LocalStack
 npm run localstack:start
@@ -747,6 +755,7 @@ npm run test:localstack
 ```
 
 ### End-to-End Tests
+
 ```bash
 # Full application testing against LocalStack
 npm run localstack:start
@@ -760,6 +769,7 @@ npm run localstack:stop
 ### Common Issues
 
 #### LocalStack Not Starting
+
 ```bash
 # Check Docker is running
 docker info
@@ -772,6 +782,7 @@ npm run localstack:restart
 ```
 
 #### CDK Deployment Failures
+
 ```bash
 # Check LocalStack health
 curl http://localhost:4566/health
@@ -784,6 +795,7 @@ npm run localstack:logs
 ```
 
 #### Service Connection Issues
+
 ```bash
 # Test service connectivity
 aws --endpoint-url=http://localhost:4566 sts get-caller-identity --profile localstack
@@ -810,12 +822,14 @@ DEBUG=1 npm run localstack:start
 ### LocalStack Performance Tips
 
 1. **Use Persistence**: Enable data persistence to avoid redeploying
+
    ```yaml
    environment:
      - PERSISTENCE=1
    ```
 
 2. **Optimize Lambda Executor**: Use local executor for faster execution
+
    ```yaml
    environment:
      - LAMBDA_EXECUTOR=local
@@ -845,30 +859,33 @@ rm -rf /tmp/localstack
 ### Moving Existing Code to LocalStack
 
 1. **Update AWS SDK Configuration**
+
    ```typescript
    const dynamoClient = new DynamoDBClient({
-     region: 'us-east-1',
-     ...(process.env.ENV_NAME === 'localstack' && {
-       endpoint: 'http://localhost:4566'
-     })
+     region: "us-east-1",
+     ...(process.env.ENV_NAME === "localstack" && {
+       endpoint: "http://localhost:4566",
+     }),
    });
    ```
 
 2. **Environment-Specific Endpoints**
+
    ```typescript
    const config = loadConfig();
    const s3Client = new S3Client({
-     region: config.aws?.region || 'us-east-1',
+     region: config.aws?.region || "us-east-1",
      ...(config.endpoints?.s3 && {
-       endpoint: config.endpoints.s3
-     })
+       endpoint: config.endpoints.s3,
+     }),
    });
    ```
 
 3. **Conditional Logic for LocalStack**
+
    ```typescript
-   const isLocalStack = process.env.ENV_NAME === 'localstack';
-   
+   const isLocalStack = process.env.ENV_NAME === "localstack";
+
    if (isLocalStack) {
      // LocalStack-specific logic
      // e.g., skip certain validations, use mock data
@@ -880,15 +897,18 @@ rm -rf /tmp/localstack
 ### Development Best Practices
 
 1. **Always Use Environment Variables**
+
    ```bash
    ENV_NAME=localstack npm run dev
    ```
 
 2. **Keep LocalStack Data Persistent**
+
    - Enables faster development cycles
    - Preserves data between restarts
 
 3. **Use Separate Resource Names**
+
    ```typescript
    resources: {
      tablePrefix: 'localstack-deals',
@@ -903,10 +923,12 @@ rm -rf /tmp/localstack
 ### Team Workflow
 
 1. **Shared LocalStack Configuration**
+
    - All team members use same docker-compose setup
    - Consistent service versions and settings
 
 2. **Documentation**
+
    - Document LocalStack-specific behaviors
    - Share troubleshooting solutions
 
@@ -925,11 +947,11 @@ rm -rf /tmp/localstack
 
 ### Resource Usage Comparison
 
-| Environment | Cost | Speed | Isolation |
-|-------------|------|-------|----------|
-| LocalStack | Free | Fast | Complete |
-| AWS Dev Account | $50-200/month | Slower | Shared |
-| Shared AWS Resources | Variable | Slowest | None |
+| Environment          | Cost          | Speed   | Isolation |
+| -------------------- | ------------- | ------- | --------- |
+| LocalStack           | Free          | Fast    | Complete  |
+| AWS Dev Account      | $50-200/month | Slower  | Shared    |
+| Shared AWS Resources | Variable      | Slowest | None      |
 
 ## Next Steps
 
@@ -941,4 +963,4 @@ rm -rf /tmp/localstack
 
 ---
 
-*This implementation guide is specific to the Super Deals microservice project. For general LocalStack information, refer to the sections above.*
+_This implementation guide is specific to the Super Deals microservice project. For general LocalStack information, refer to the sections above._

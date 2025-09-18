@@ -7,11 +7,12 @@ This document outlines the coding standards, project structure, and best practic
 1. [Project Structure](#project-structure)
 2. [TypeScript Standards](#typescript-standards)
 3. [AWS CDK Best Practices](#aws-cdk-best-practices)
-4. [Testing Standards](#testing-standards)
-5. [Environment Configuration](#environment-configuration)
-6. [Documentation](#documentation)
-7. [Git Workflow](#git-workflow)
-8. [Security Guidelines](#security-guidelines)
+4. [Microservice Resource Naming](#microservice-resource-naming)
+5. [Testing Standards](#testing-standards)
+6. [Environment Configuration](#environment-configuration)
+7. [Documentation](#documentation)
+8. [Git Workflow](#git-workflow)
+9. [Security Guidelines](#security-guidelines)
 
 ## Project Structure
 
@@ -92,6 +93,94 @@ import { DEFAULT_TAGS } from "#src/constants/default-tags";
   - `Environment`: The deployment environment (e.g., dev, staging, prod)
   - `ManagedBy`: Indicates the infrastructure management tool (e.g., CDK)
   - `Project`: The project name (e.g., SuperDeals)
+
+## Microservice Resource Naming
+
+### General rules
+
+- Service-first, then environment: Prefer `serviceName/envName/...` for hierarchical names (paths) or `serviceName-envName-...` for flat names.
+- Stable identifiers: Avoid dynamic IDs (e.g., auto-generated resource IDs) in names that you will query or retain across deployments.
+- Consistency: Use the same patterns across all microservices for parity and tooling simplicity.
+
+### Recommended conventions
+
+- RestApi name (API Gateway): `serviceName-envName-api`
+  - Example: `users-ms-dev-api`
+- Stage name: `envName` (e.g., `dev`, `staging`, `prod`)
+- CloudWatch Logs (API Gateway access logs): `/apigateway/serviceName/envName/restApiName/access`
+  - Example: `/apigateway/users-ms/dev/users-ms-dev-api/access`
+  - Rationale: service- and env-scoped; does not change with API IDs
+- SNS Topics: `serviceName/envName/topicName`
+  - Example: `users-ms/dev/user-signups`
+- CloudFormation Outputs (exportName and LogicalId): `RestApiUrl-serviceName-envName`
+  - Example: `RestApiUrl-users-ms-dev`
+  - Value: base URL (e.g., `stage.urlForPath("/")`)
+- SSM Parameter paths (optional): `/super-deals/serviceName/envName/...`
+  - Example: `/super-deals/users-ms/dev/api/baseUrl`
+
+## SSM Publishing Pattern
+
+This section standardizes how microservices publish and consume cross-repo configuration via AWS Systems Manager Parameter Store (SSM).
+
+### Paths and visibility
+
+- Canonical base path is built as: `/<appBase>/<envName>/<serviceName>/<visibility>` where visibility is one of `public | private`.
+- `appBase` defaults to `/super-deals`, but should be set via config `parameterStorePrefix`.
+- Helpers to construct paths and read parameters live in each service under `src/helpers/ssm.ts` and expose:
+  - `buildSsmPublicPath(envName, serviceName?)`
+  - `getBasePath(envName, serviceName?)` (alias for the service's public path)
+  - `readParamRequired(scope, name)` and `readParamOptional(scope, name)`
+
+### Publisher responsibilities (example: users-ms)
+
+- Publish under the publisher's service namespace, not the consumer's. Example for users-ms public bindings:
+  - Base path: `/<appBase>/<env>/<users-ms>/public`
+  - Use a centralized construct at the service stack layer to publish, e.g., `lib/ssm-publications/construct.ts` via a values map.
+  - Do not write to SSM inside leaf constructs (e.g., inside `user-pool` or `iam/roles`).
+
+#### Required keys published by users-ms
+
+- Auth bindings
+  - `auth/userPoolId`
+  - `auth/userPoolClientId`
+  - `auth/identityPoolId`
+  - `auth/cognitoDomain`
+  - `auth/oauthAuthorizeUrl`
+  - `auth/oauthTokenUrl`
+  - `region`
+
+- IAM role bindings
+  - `iam/roles/merchant/arn`
+  - `iam/roles/authenticated/arn`
+  - `iam/roles/unauthenticated/arn`
+
+### Consumer responsibilities (example: deals-ms)
+
+- When reading parameters from another service, specify the source service name when building the base path:
+  - `const basePath = getBasePath(envName, "users-ms")`
+- Use `readParamRequired` for mandatory values and `readParamOptional` for optional ones.
+- Example bindings consumed in deals-ms:
+  - Auth: `auth/userPoolId` (used to import `IUserPool`, derive issuer and JWKS URLs)
+  - IAM: role ARNs for `merchant`, `authenticated`, `unauthenticated` (used to import roles and attach policies)
+
+### Do / Don't
+
+- Do centralize SSM publications in the service stack (one place) using a values map and a dedicated construct.
+- Do publish only primitives and URLs; derive computed URLs (e.g., OAuth endpoints) consistently.
+- Do keep keys stable and additive to avoid breaking consumers.
+- Don't publish from leaf constructs.
+- Don't hardcode app base path; use config `parameterStorePrefix`.
+- Don't assume consumers are in the same repo; keep visibility and naming generic.
+
+### Rationale
+
+- Names are unique across services and environments, easy to search, and stable across redeployments.
+- Using hierarchical log group names keeps CloudWatch Logs organized and reduces accidental cross-environment confusion.
+
+### Implementation notes
+
+- Prefer providing explicit names in CDK constructs (e.g., `restApiName`) instead of relying on generated IDs.
+- Tag resources with `Service` and `Environment` consistently for cost allocation and filtering.
 
 ### Security
 
@@ -181,6 +270,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 ```
 
 Types:
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation changes
@@ -259,4 +349,4 @@ Types:
 
 ---
 
-*Last Updated: July 10, 2025*
+_Last Updated: July 10, 2025_

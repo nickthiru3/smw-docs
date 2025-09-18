@@ -7,6 +7,18 @@ This guide describes how we design, own, discover, and evolve identity-based per
 > - Identity-facing policies: Permissions attached to human/user identities via Cognito groups → IAM roles.
 > - Execution-role policies: Permissions attached to service identities (e.g., Lambda roles). These remain local to the owning service.
 
+## Table of Contents
+
+- [Current Status](#current-status)
+- [Ownership](#ownership)
+- [Role Model and Identity Pool Mappings](#role-model-and-identity-pool-mappings)
+- [Guardrails](#guardrails)
+- [Discoverability](#discoverability)
+- [Versioning and Contracts](#versioning-and-contracts)
+- [Practical Patterns](#practical-patterns)
+- [Examples](#examples)
+- [Responsibilities Matrix (RACI)](#responsibilities-matrix-raci)
+
 ## Current Status
 
 - Implemented
@@ -28,6 +40,39 @@ This guide describes how we design, own, discover, and evolve identity-based per
 - **Change requests**
   - Consumers propose policy additions via PRs that touch: `deals-ms/lib/permissions/construct.ts` (consumer-proposed statements) and `users-ms` role definitions.
   - The Identity team reviews impact, overlaps, and least-privilege adherence.
+
+## Role Model and Identity Pool Mappings
+
+This section clarifies which roles exist, why they exist, and how Cognito Identity Pool mappings route users to those roles at runtime.
+
+- **Authenticated role (default)**
+  - Purpose: fallback/default role for any signed-in user when no more specific rule applies.
+  - Configuration: provided as `roles.authenticated` on `CfnIdentityPoolRoleAttachment`.
+  - Usage: acts as a safety net; can be used deliberately by setting `ambiguousRoleResolution: "AuthenticatedRole"`.
+
+- **Unauthenticated role (default)**
+  - Purpose: role for guest users (if the Identity Pool allows unauth identities).
+  - Configuration: provided as `roles.unauthenticated` on `CfnIdentityPoolRoleAttachment`.
+  - Note: harmless to keep even if unauth identities are disabled; it is part of the standard attachment shape.
+
+- **Group-specific roles (e.g., merchant, customer, admin)**
+  - Purpose: override the default authenticated role for specific user cohorts so they can receive granular permissions.
+  - Ownership model: roles are created and owned by `users-ms`; consumer services (e.g., `deals-ms`) attach service-specific policies to these roles (see `deals-ms/lib/permissions/construct.ts`). This separation lets domain teams evolve permissions without role sprawl.
+  - Why separate roles (vs. only `authenticated`): enables targeted, least-privilege permissions per group and clear cross-service ownership boundaries.
+
+- **Role mappings (Cognito Identity Pool)**
+  - Implemented via `CfnIdentityPoolRoleAttachment.roleMappings` using a provider-specific key:
+    - Key: `${userPoolProviderName}:${userPoolClientId}` (use the computed token as the object key; do not use `CfnJson` or `.ref`).
+    - Type: `Rules`.
+    - Rules: evaluate `cognito:groups` claims and map users to a group-specific role ARN.
+  - Example rule: when `cognito:groups` contains `merchants`, set `roleArn` to the merchant role. Group names are case-sensitive and must match the names created in the user-groups construct.
+  - Ambiguity handling: set `ambiguousRoleResolution` to `Deny` to fail closed, or `AuthenticatedRole` to fall back to the default authenticated role.
+
+Operational notes
+
+- Group name casing must match exactly (e.g., `merchants` vs `Merchants`).
+- Keep the default `authenticated` and `unauthenticated` roles present, even when using rule-based mappings.
+- Use group-specific roles when consumers need to attach distinct policies. If a cohort does not need special permissions, you may route them to the default authenticated role instead of defining a new role.
 
 ## Guardrails
 
