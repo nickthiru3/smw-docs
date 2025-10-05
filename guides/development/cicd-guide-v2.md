@@ -2,70 +2,60 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Strategy Overview](#strategy-overview)
-  - [Why Refined Trunk-Based with Native AWS Integration?](#why-refined-trunk-based-with-native-aws-integration)
-  - [Architecture Comparison](#architecture-comparison)
-- [Core Concepts](#core-concepts)
-  - [Branch Strategy](#branch-strategy)
-  - [Environment Strategy](#environment-strategy)
-  - [Versioning Strategy](#versioning-strategy)
-  - [Team Workflow](#team-workflow)
-    - [Daily Development](#daily-development)
-    - [Release Process (Version Cut Workflow)](#release-process-version-cut-workflow)
+- [CI/CD Guide v2: Simplified Trunk-Based Strategy for Microservices](#cicd-guide-v2-simplified-trunk-based-strategy-for-microservices)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Strategy Overview](#strategy-overview)
+    - [Why Refined Trunk-Based with Native AWS Integration?](#why-refined-trunk-based-with-native-aws-integration)
+    - [Architecture Comparison](#architecture-comparison)
+  - [Core Concepts](#core-concepts)
+    - [Branch Strategy](#branch-strategy)
+    - [Environment Strategy](#environment-strategy)
+    - [Versioning Strategy](#versioning-strategy)
+    - [Team Workflow](#team-workflow)
+  - [LocalStack Integration for Local Development](#localstack-integration-for-local-development)
+    - [Overview](#overview)
+    - [Quick Setup](#quick-setup)
+    - [Configuration Management](#configuration-management)
+      - [SSM Parameter Path Standardization](#ssm-parameter-path-standardization)
+  - [Simplified Trunk-Based Release Workflow](#simplified-trunk-based-release-workflow)
+    - [Complete Enterprise Architecture](#complete-enterprise-architecture)
+      - [Environment Strategy](#environment-strategy-1)
+      - [Complete Workflow Summary](#complete-workflow-summary)
+    - [Team Roles and Responsibilities](#team-roles-and-responsibilities)
+      - [Development Team](#development-team)
+      - [Release Manager (Optional)](#release-manager-optional)
+    - [Automation Scripts](#automation-scripts)
+      - [Package.json Scripts](#packagejson-scripts)
+      - [Release Script](#release-script)
+    - [Manual Approval Integration](#manual-approval-integration)
+      - [AWS CodePipeline Manual Approval (Recommended)](#aws-codepipeline-manual-approval-recommended)
+    - [Rollback Strategies](#rollback-strategies)
+      - [Production Rollback Options](#production-rollback-options)
+    - [Merge Request Strategy](#merge-request-strategy)
+      - [Code Review Process](#code-review-process)
     - [Hotfix Process](#hotfix-process)
-- [LocalStack Integration](#localstack-integration-for-local-development)
-  - [Overview](#overview)
-  - [Quick Setup](#quick-setup)
-  - [Configuration Management](#configuration-management)
-  - [Development Workflow](#development-workflow)
-  - [Testing Strategy](#testing-strategy)
-  - [Best Practices](#best-practices)
-- [Simplified Trunk-Based Workflow](#simplified-trunk-based-release-workflow)
-  - [Complete Enterprise Architecture](#complete-enterprise-architecture)
-    - [Environment Strategy](#environment-strategy-1)
-  - [Team Roles and Responsibilities](#team-roles-and-responsibilities)
-    - [Development Team](#development-team)
-    - [Release Manager (Optional)](#release-manager-optional)
-  - [Automation Scripts](#automation-scripts)
-    - [Package.json Scripts](#packagejson-scripts)
-    - [Release Script](#release-script)
-  - [Manual Approval Integration](#manual-approval-integration)
-    - [AWS CodePipeline Manual Approval (Recommended)](#aws-codepipeline-manual-approval-recommended)
-    - [Approval Process](#approval-process)
-  - [Rollback Strategies](#rollback-strategies-1)
-    - [Production Rollback Options](#production-rollback-options)
-  - [Merge Request Strategy](#merge-request-strategy)
-    - [Code Review Process](#code-review-process)
-    - [Review Checklist](#review-checklist)
-  - [Hotfix Process](#hotfix-process-1)
-    - [Emergency Hotfix Workflow](#emergency-hotfix-workflow)
-- [Teams Coordination](#teams-coordination--workflow)
-  - [Platform Team Responsibilities](#platform-team-responsibilities)
-    - [IAM Management](#iam-management)
-    - [Infrastructure](#infrastructure)
-  - [Development Team Integration](#development-team-integration)
-    - [Repository Setup](#repository-setup)
-    - [Daily Workflow](#daily-workflow-1)
-- [Multi-Repo CI/CD Architecture](#multi-repo-cicd-architecture)
-  - [Overview](#overview-1)
-  - [Repository Structure](#repository-structure)
-  - [Pipeline Per Service Strategy](#pipeline-per-service-strategy)
-  - [Resource Naming & Isolation](#resource-naming--isolation)
-  - [Rollback Strategies](#rollback-strategies)
-    - [Service-Level Rollbacks](#service-level-rollbacks)
-    - [App-Level Rollbacks](#app-level-rollbacks)
-    - [Emergency Rollback Scenarios](#emergency-rollback-scenarios)
-  - [Pipeline Bootstrap & LocalStack Separation](#pipeline-bootstrap--localstack-separation)
-  - [Team Responsibilities](#team-responsibilities)
-    - [Service-Level Responsibilities](#service-level-responsibilities)
-    - [App-Level Responsibilities](#app-level-responsibilities)
-  - [CodePipeline Rollback Mechanics](#codepipeline-rollback-mechanics)
-  - [Coordination Workflows](#coordination-workflows)
-- [Reference Implementation](#reference-implementation)
-  - [Pipeline Configuration](#pipeline-configuration)
-  - [Stage Configuration](#stage-configuration)
-- [Migration Guide](#migration-from-v1-implementation)
+      - [Emergency Hotfix Workflow](#emergency-hotfix-workflow)
+  - [Teams Coordination \& Workflow](#teams-coordination--workflow)
+    - [Platform Team Responsibilities](#platform-team-responsibilities)
+    - [Development Team Integration](#development-team-integration)
+  - [Multi-Repo CI/CD Architecture](#multi-repo-cicd-architecture)
+    - [Overview](#overview-1)
+    - [Repository Structure](#repository-structure)
+    - [Pipeline Per Service Strategy](#pipeline-per-service-strategy)
+    - [Resource Naming \& Isolation](#resource-naming--isolation)
+    - [Rollback Strategies](#rollback-strategies-1)
+      - [Service-Level Rollbacks](#service-level-rollbacks)
+      - [App-Level Rollbacks](#app-level-rollbacks)
+      - [Emergency Rollback Scenarios](#emergency-rollback-scenarios)
+    - [Pipeline Bootstrap \& LocalStack Separation](#pipeline-bootstrap--localstack-separation)
+    - [Team Responsibilities](#team-responsibilities)
+    - [CodePipeline Rollback Mechanics](#codepipeline-rollback-mechanics)
+    - [Coordination Workflows](#coordination-workflows)
+  - [Reference Implementation](#reference-implementation)
+    - [Pipeline Configuration](#pipeline-configuration)
+    - [Stage Configuration](#stage-configuration)
+  - [Migration from v1 Implementation](#migration-from-v1-implementation)
 
 ## Introduction
 
@@ -152,10 +142,10 @@ This guide outlines a **refined trunk-based CI/CD strategy** specifically design
 
 **Daily Development:**
 
-1. Work directly on `master` branch or create feature branches from `master`
+1. Work directly on `master` branch or create (local only) feature branches from `master`
 2. Develop and test locally with LocalStack (`npm run dev:localstack`)
 3. Test infrastructure changes with LocalStack deployment
-4. Create merge request when ready (if using feature branches)
+4. Create merge request when ready (if using feature branches, merge them to local master)
 
 **Release Process (Version Cut Workflow):**
 
@@ -187,6 +177,7 @@ LocalStack provides a fully functional local AWS cloud stack, enabling developer
 **Installation Methods:**
 
 Developers can choose from multiple LocalStack installation approaches:
+
 - **Docker Desktop Extension** (Recommended for GUI users)
 - **CLI Installation** (Traditional command-line approach)
 - **Docker Compose** (Team standardization)
@@ -232,14 +223,40 @@ Construct paths as:
 ```
 
 Required variables:
+
 - `ENV_NAME` (e.g., `local`, `staging`, `prod`)
 - `SERVICE_NAME` (e.g., `deals-ms`, `users-ms`)
 
 Optional variables:
+
 - `APP_BASE_PATH` (e.g., `/super-deals`) — overrides config when set
 - `PARAMETER_STORE_PREFIX` — maps to `parameterStorePrefix` when `APP_BASE_PATH` is not set
 
 CDK injects `SSM_PUBLIC_PATH` into discovery Lambdas and scopes IAM to `arn:aws:ssm:*:*:parameter{SSM_PUBLIC_PATH}*`.
+
+#### Secure SSM Dynamic References for Secrets
+
+For secrets like Slack webhooks, we use CloudFormation dynamic references to SSM SecureString parameters to avoid plaintext values in templates.
+
+- Standardized binding name: `slackWebhookUrl`
+- Standardized SSM path: `/super-deals/{ENV_NAME}/platform/private/monitor/slack/webhookUrl`
+- CDK bindings opt-in to secure reads by passing `secure: true` to the shared bindings utility. When set, the helper resolves the latest SecureString version using `SecretValue.ssmSecure()` and emits a dynamic reference such as `{{resolve:ssm-secure:/super-deals/dev/platform/private/monitor/slack/webhookUrl}}`.
+
+```ts
+// lib/bindings/monitor/construct.ts
+const bindings = new BindingsUtilConstruct<IMonitorBindings>(this, "MonitorBindings", {
+  envName,
+  producerServiceName: "platform",
+  visibility: "private",
+  secure: true,
+  spec: { slackWebhookUrl: "monitor/slack/webhookUrl" },
+});
+
+// In monitor Lambda construct: sets env
+SLACK_WEBHOOK_URL: bindings.values.slackWebhookUrl;
+```
+
+If you ever need to pin to a specific SecureString version, call `SecretValue.ssmSecure(parameterName, version)` directly in a bespoke construct.
 
 **LocalStack Configuration:**
 

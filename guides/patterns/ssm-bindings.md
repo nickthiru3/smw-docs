@@ -14,10 +14,8 @@ The goal is to eliminate ad-hoc SSM reads, provide a single, ergonomic API for c
 - [Contracts (infra-contracts)](#contracts-infra-contracts)
 - [Publishing (Producer → SSM)](#publishing-producer--ssm)
 - [Consuming (Consumer → BindingsConstruct)](#consuming-consumer--bindingsconstruct)
-  - [Keys variant (simple suffix = key name)](#keys-variant-simple-suffix--key-name)
-  - [Spec variant (key → SSM suffix mapping)](#spec-variant-key--ssm-suffix-mapping)
+  - [Params variant (key → SSM suffix mapping)](#params-variant-key--ssm-suffix-mapping)
   - [Producer vs Consumer serviceName](#producer-vs-consumer-servicename)
-  - [Why two reader styles?](#why-two-reader-styles)
   - [Design principles](#design-principles)
 - [Versioning and Rollout Checklist](#versioning-and-rollout-checklist)
 
@@ -32,28 +30,25 @@ The goal is to eliminate ad-hoc SSM reads, provide a single, ergonomic API for c
       "auth/userPoolId": auth.userPool.pool.userPoolId,
     });
     ```
+  - For secure values, call `publishSecureStringParameters()` so the parameters are stored as `SecureString`s (optionally passing an `encryptionKeyArn`).
+    ```ts
+    publishSecureStringParameters(this, `${basePath}/monitor`, {
+      "slack/webhookUrl": secrets.slackWebhookUrl,
+    });
+    ```
 
 - Consumer (reader)
   - Use the ergonomic `BindingsConstruct<T>`.
-  - If suffix == key name, use the keys variant; otherwise use the spec mapping variant.
+  - Provide a `params` map where each logical key points to the hierarchical suffix published in SSM.
   - Always set `producerServiceName` to the service that PUBLISHES the values.
     ```ts
-    // Keys variant example (website)
-    const website = new BindingsConstruct<IWebsiteBindings>(this, "WebsiteBindings", {
-      envName: config.envName,
-      producerServiceName: "website-ms",
-      visibility: "public",
-      keys: ["websiteUrl", "sourceEmail"] as const,
-    });
-    ```
-    ```ts
-    // Spec variant example (auth)
-    const authSpec = { userPoolId: "auth/userPoolId" } as const;
+    // Params example (auth)
+    const authParams = { userPoolId: "auth/userPoolId" } as const;
     const auth = new BindingsConstruct<IAuthBindings>(this, "UsersMsAuthBindings", {
       envName: config.envName,
       producerServiceName: "users-ms",
       visibility: "public",
-      spec: authSpec,
+      params: authParams,
     });
     ```
 
@@ -123,43 +118,27 @@ Each repo provides small SSM helpers in `src/helpers/ssm.ts`:
 
 - `buildSsmPublicPath`, `buildSsmPrivatePath`
 - `readParam`
-- `readBindingsByKeys(scope, basePath, keys)`
-- `readBindings(scope, basePath, spec)`
+- `readBindings(scope, basePath, params)`
+- `readSecureBindings(scope, basePath, params)`
+- `publishStringParameters(scope, basePath, values)`
+- `publishSecureStringParameters(scope, basePath, values, { encryptionKeyArn })`
 
-The generic `BindingsConstruct<T>` uses the helpers internally and supports two styles:
+The generic `BindingsConstruct<T>` uses the helpers internally and expects a single params-oriented style:
 
-### Keys variant (simple suffix = key name)
-
-```ts
-// users-ms/lib/website/construct.ts
-import BindingsConstruct from "#lib/utils/bindings/construct";
-import type { IWebsiteBindings } from "@super-deals/infra-contracts";
-
-const bindings = new BindingsConstruct<IWebsiteBindings>(this, "WebsiteBindings", {
-  envName: config.envName,
-  producerServiceName: "website-ms",
-  visibility: "public",
-  keys: ["websiteUrl", "sourceEmail"] as const,
-});
-
-this.websiteUrl = bindings.values.websiteUrl;
-this.sourceEmail = bindings.values.sourceEmail;
-```
-
-### Spec variant (key → SSM suffix mapping)
+### Params variant (key → SSM suffix mapping)
 
 ```ts
 // deals-ms/lib/auth/construct.ts
 import BindingsConstruct from "#lib/utils/bindings/construct";
 import type { IAuthBindings } from "@super-deals/infra-contracts";
 
-const authSpec = { userPoolId: "auth/userPoolId" } as const;
+const authParams = { userPoolId: "auth/userPoolId" } as const;
 
 const authBindings = new BindingsConstruct<IAuthBindings>(this, "UsersMsAuthBindings", {
   envName: config.envName,
   producerServiceName: "users-ms",
   visibility: "public",
-  spec: authSpec,
+  params: authParams,
 });
 
 const userPool = UserPool.fromUserPoolId(this, "ImportedUserPool", authBindings.values.userPoolId);
@@ -170,13 +149,13 @@ const userPool = UserPool.fromUserPoolId(this, "ImportedUserPool", authBindings.
 import BindingsConstruct from "#lib/utils/bindings/construct";
 import type { IIamBindings } from "@super-deals/infra-contracts";
 
-const iamSpec = { merchantRoleArn: "iam/roles/merchant/arn" } as const;
+const iamParams = { merchantRoleArn: "iam/roles/merchant/arn" } as const;
 
 const iamBindings = new BindingsConstruct<IIamBindings>(this, "UsersMsIamBindings", {
   envName: config.envName,
   producerServiceName: "users-ms",
   visibility: "public",
-  spec: iamSpec,
+  params: iamParams,
 });
 
 const merchantRole = Role.fromRoleArn(this, "ImportedMerchantRole", iamBindings.values.merchantRoleArn);
@@ -186,11 +165,6 @@ const merchantRole = Role.fromRoleArn(this, "ImportedMerchantRole", iamBindings.
 
 - Always point the consumer to the producer by setting `producerServiceName` to the service that publishes the parameters (e.g., `"users-ms"`, `"website-ms"`).
 - Avoid using `config.service.name` in consumers unless the consumer and producer are the same service.
-
-### Why two reader styles?
-
-- Use the keys variant when your SSM key suffixes match your interface keys (simpler and more concise).
-- Use the spec variant when you need to map logical keys to different SSM suffixes (e.g., nested paths like `iam/roles/merchant/arn`).
 
 ### Design principles
 

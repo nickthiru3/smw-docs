@@ -1,28 +1,157 @@
-# API Testing Guide
+# E2E Testing Guide: API Gateway + Cognito (Supertest + Jest)
 
-This document provides comprehensive guidance on testing the SuperDeals API endpoints using Supertest and Jest.
+This guide explains how we run end-to-end API tests against a deployed environment using Supertest and Jest. It reflects the current repo layout (no monorepo assumption) and our auth model (Cognito JWT via USER_PASSWORD_AUTH).
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Testing Architecture](#testing-architecture)
-- [Test Configuration](#test-configuration)
-- [Writing API Tests](#writing-api-tests)
-- [Test Data Management](#test-data-management)
+- [Test Locations](#test-locations)
+- [Environment Discovery (API URL)](#environment-discovery-api-url)
+- [Authentication (Cognito JWT)](#authentication-cognito-jwt)
 - [Running Tests](#running-tests)
-- [Best Practices](#best-practices)
+- [Writing E2E Tests](#writing-e2e-tests)
+- [CI Recommendations](#ci-recommendations)
 - [Troubleshooting](#troubleshooting)
 
 ## Overview
 
-The SuperDeals API testing strategy focuses on end-to-end testing of API Gateway endpoints using Supertest. These tests validate that our API endpoints correctly handle requests, perform business logic, and return appropriate responses.
+We test the deployed API Gateway endpoints (e.g., `POST /deals`) from outside the system:
 
-### Key Testing Components
+- HTTP client: Supertest
+- Test runner: Jest
+- URL resolution: `outputs.json` (from `cdk deploy --outputs-file outputs.json`)
+- Auth: Cognito USER_PASSWORD_AUTH → obtain JWT and cache it locally for tests
 
-- **Supertest**: HTTP assertion library that allows testing API endpoints
-- **Jest**: Testing framework for running tests and assertions
-- **Test fixtures**: Reusable test data for consistent testing
-- **Configuration system**: Dynamic configuration that adapts to environment changes
+E2E tests are intentionally minimal smoke tests that validate:
+- Happy-path success (e.g., 200 with a valid response body)
+- Representative validation failures (e.g., 400 on invalid body)
+
+## Test Locations
+
+- Tests live under `test/e2e/` and mirror endpoint grouping.
+- Example in this repo:
+  - `test/e2e/deals/post/smoke.test.ts`
+  - Helpers:
+    - URL resolution: `test/support/get-api-url.ts`
+    - Bearer token cache (profile-aware): `test/support/token-cache.ts`
+    - Default profile loader: `test/support/e2e-config.ts`
+    - Token fetcher (USER_PASSWORD_AUTH): `test/support/fetch-token.ts`
+
+## Environment Discovery (API URL)
+
+The E2E suite resolves the base URL from `outputs.json` in the project root.
+
+- Helper: `test/support/get-api-url.ts`
+- Preferred flow: run your CDK deploy (dev/staging/prod) with `--outputs-file outputs.json` so tests can auto-discover the API URL.
+- Emergency override: you may set `TEST_API_URL`, but using `outputs.json` is preferred.
+
+## Authentication (Cognito JWT)
+
+We use Cognito USER_PASSWORD_AUTH. Tokens are obtained via a script and cached locally—no `.env` usage and no leaking secrets into app config.
+
+Artifacts under `.e2e/` (not committed):
+
+- `auth.<profile>.json` (input to fetch a token)
+  - {
+    "region": "us-east-1",
+    "clientId": "<UserPoolClientId>",
+    "username": "merchant@example.com",
+    "password": "<password>",
+    "useIdToken": false
+  }
+- `token.<profile>.json` (output with token + expiry)
+  - { "token": "<JWT>", "expiresAt": "2025-01-02T03:04:05.000Z" }
+- `e2e.config.json` (optional default profile)
+  - { "defaultProfile": "merchant" }
+
+Helpers and scripts:
+
+- `test/support/fetch-token.ts` (script): obtains a token with USER_PASSWORD_AUTH
+  - Usage: `npm run e2e:login -- --profile merchant`
+  - Reads `.e2e/auth.merchant.json`, writes `.e2e/token.merchant.json`
+- `test/support/token-cache.ts`: loads a token for a given profile and ensures it’s not expired (60s safety window)
+- `test/support/e2e-config.ts`: loads default profile from `.e2e/e2e.config.json`
+
+The E2E smoke test will auto-skip if the API URL or bearer token is missing/expired and provide a clear message.
+
+## Running Tests
+
+1) Deploy environment and generate outputs
+
+```bash
+npm run deploy:dev  # or your preferred deploy
+# ensure outputs.json exists at project root
+```
+
+2) Create auth config for your test profile(s)
+
+```json
+// .e2e/auth.merchant.json
+{
+  "region": "us-east-1",
+  "clientId": "<UserPoolClientId>",
+  "username": "merchant@example.com",
+  "password": "<password>",
+  "useIdToken": false
+}
+```
+
+3) (Optional) Set default profile
+
+```json
+// .e2e/e2e.config.json
+{ "defaultProfile": "merchant" }
+```
+
+4) Fetch and cache token
+
+```bash
+npm run e2e:login -- --profile merchant
+```
+
+5) Run E2E
+
+```bash
+npm run test:e2e
+```
+
+## Writing E2E Tests
+
+- Reference example: `test/e2e/deals/post/smoke.test.ts`
+- Patterns:
+  - Resolve URL via `getApiBaseUrlFromOutputs()` (fallback to `TEST_API_URL` only if absolutely needed).
+  - Load bearer token for the default profile via `getDefaultProfile()` + `getBearerTokenIfAvailable(profile)`.
+  - Keep tests idempotent (e.g., generate unique titles or avoid destructive operations).
+  - Prefer a small number of assertions: one happy path and one representative failure per endpoint.
+
+## CI Recommendations
+
+Align with `guides/development/cicd-guide-v2.md` while respecting current constraints (no LocalStack due to Cognito/Pipeline limitations on free tier):
+
+- Pull Requests (fast feedback):
+  - Run unit tests (helpers), handler behavior tests, and CDK template tests.
+  - Skip E2E by default on PRs unless a secure environment (API URL + credentials) is provided.
+
+- Main/Nightly (optional):
+  - Allow running E2E against a stable environment if CI secrets are available.
+  - Provide tokens through a secure mechanism and write `.e2e/token.<profile>.json` during the workflow before running tests (avoid committing secrets).
+
+- Do NOT add LocalStack-based integration tests for now (per policy and constraints). Revisit later if constraints lift.
+
+## Troubleshooting
+
+- Tests are skipped with: "missing API URL or bearer token"
+  - Ensure `outputs.json` is present and `.e2e/token.<profile>.json` exists and is not expired.
+  - Run `npm run e2e:login -- --profile <name>` again to refresh.
+
+- 401/403 responses
+  - Verify that the token matches the expected user type/permissions and that the API authorizer configuration aligns with your test profile.
+
+- URL resolution issues
+  - Confirm `outputs.json` at the project root contains the API URL. The helper prefers execute-api URLs but falls back to any `https://` value it finds.
+
+- Timeouts
+  - Increase Jest test timeouts at the individual test level if your environment is slow.
 
 ## Testing Architecture
 
