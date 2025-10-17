@@ -10,15 +10,30 @@ Scope
 - Focuses on practical, repeatable steps from story conception to working software.
 - Optimized for our v3 architecture: frontend-embedded BFF (SvelteKit `+server.ts`) orchestrating private microservices.
 
-Core Principles
+## Core Principles
 - Story-first, scenario-driven: Requirements are expressed through user stories, business rules, and concrete scenarios.
 - Contract-first integration: APIs are specified early to enable parallel work.
 - Visual clarity: Sequence diagrams to reveal responsibilities and edge cases.
 - Data consciousness: Distinguish payloads “over the wire” from persisted entities.
 - Incremental rigor: Start simple; add automation and gates as the system matures.
 
-Artifacts and Their Intent
-1) Story file (Markdown)
+## Planning Artefacts & Flow
+- **Project plan** (`docs/project/project-plan.md`): Captures vision, roadmap phases, risks, and open questions.
+- **Feature backlog** (`docs/project/feature-backlog.md`): User-type oriented job list; select the next candidate from here.
+- **Status board** (`docs/project/status-board.md`): Lightweight Kanban (To Do/In Progress/Blocked/Done). Move the chosen job into **To Do**, then advance it as work progresses.
+
+Flow summary:
+1. Prioritise within the feature backlog.
+2. Move the selected job into the status board **To Do** column.
+3. Produce job artefacts (card, diagrams, contracts, etc.).
+4. Implement, test, and deploy; transition the job across status columns until **Done**.
+
+## Artifacts and Their Intent
+0) Job card (Markdown)
+   - Location: `docs/specs/jobs/.../job.md` (legacy references in `docs/specs-OLD/jobs/` remain for guidance).
+   - Contents: Job statement (who/wants/so that), business rules, early assumptions, links to supporting artefacts.
+
+1) Story file (Markdown) *(optional when the job card already captures story detail)*
    - Location: `specs/stories/.../story.md`
    - Contents: Title, story description, business rules (acceptance criteria), scenarios (success + failure variants).
 

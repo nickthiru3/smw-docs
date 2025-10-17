@@ -1,0 +1,20 @@
+@startuml merchants-search-service
+!include skinparam.puml
+
+actor Consumer as consumer
+participant "SMW Web App" as app
+participant "BFF (+server.ts)" as bff
+participant "Merchants Search Service" as listings
+participant "Mock Merchant Directory (mock data)" as directory
+
+consumer -[#blue]> app ++: Enter filters & submit search
+app -[#blue]> bff ++: GET /api/search/merchants?filters
+bff -[#red]> bff: validate filters
+bff -[#red]> listings ++: searchListings(query)
+listings -[#red]> directory ++: lookup(query)
+directory -[#red]-> listings: matching merchants
+listings -[#red]-> bff: normalized results
+bff -[#blue]-> app: search results (list + map)
+app -[#blue]-> consumer: Render results & map pins
+
+@enduml
