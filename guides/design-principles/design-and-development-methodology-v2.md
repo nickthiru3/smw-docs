@@ -32,7 +32,7 @@ This guide establishes a unified development methodology that combines:
 - **UI-First Approach** - Design-driven development starting with user interfaces
 - **Agile/Scrum** - Iterative delivery with continuous feedback
 
-The methodology is specifically designed for full-stack teams building scalable applications with SvelteKit (frontend + BFF) and microservices backends using AWS.
+The methodology is specifically designed for full-stack teams building scalable applications with SvelteKit (frontend + BFF) and microservices backends using AWS serverless services.
 
 ### Key Principles
 
@@ -114,7 +114,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 
 ### Backend Microservices
 
-- **Runtime**: Node.js (recommended) or Python
+- **Runtime**: Node.js (recommended)
 - **Database**: AWS DynamoDB
 - **SDK**: AWS SDK v3
 - **Architecture**: Microservices pattern
@@ -122,7 +122,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 
 ### Infrastructure
 
-- **IaC**: Terraform or AWS CDK
+- **IaC**: AWS CDK
 - **API Gateway**: AWS API Gateway
 - **Authentication**: AWS Cognito or custom JWT
 
@@ -132,32 +132,32 @@ The methodology is specifically designed for full-stack teams building scalable 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         Browser                              │
-│                    (SvelteKit Frontend)                      │
+│                         Browser                             │
+│                    (SvelteKit Frontend)                     │
 └────────────────────────────┬────────────────────────────────┘
                              │
                              │ HTTPS
                              │
 ┌────────────────────────────▼────────────────────────────────┐
-│                    SvelteKit BFF Layer                       │
-│                   (+server.ts routes)                        │
-│                                                              │
+│                    SvelteKit BFF Layer                      │
+│                   (+server.ts routes)                       │
+│                                                             │
 │  • Orchestration of backend services                        │
 │  • Authentication/Authorization                             │
 │  • Response transformation                                  │
 └─────┬──────────────────────┬─────────────────────┬──────────┘
       │                      │                     │
-      │ Internal API         │ Internal API        │ Internal API
+      │ API Gateway          │ API Gateway         │ API Gateway
       │                      │                     │
-┌─────▼──────────┐  ┌────────▼──────────┐  ┌──────▼──────────┐
-│  Microservice  │  │  Microservice      │  │  Microservice   │
-│      A         │  │      B             │  │      C          │
-│                │  │                    │  │                 │
-│  ┌──────────┐ │  │  ┌──────────┐     │  │  ┌──────────┐  │
-│  │DynamoDB  │ │  │  │DynamoDB  │     │  │  │DynamoDB  │  │
-│  │ Table    │ │  │  │ Table    │     │  │  │ Table    │  │
-│  └──────────┘ │  │  └──────────┘     │  │  └──────────┘  │
-└────────────────┘  └───────────────────┘  └─────────────────┘
+┌─────▼──────────┐  ┌────────▼──────────┐   ┌──────▼──────────┐
+│  Microservice  │  │  Microservice     │   │  Microservice   │
+│      A         │  │      B            │   │      C          │
+│                │  │                   │   │                 │
+│  ┌──────────┐  │  │  ┌──────────┐     │   │  ┌──────────┐   │
+│  │DynamoDB  │  │  │  │DynamoDB  │     │   │  │DynamoDB  │   │
+│  │ Table    │  │  │  │ Table    │     │   │  │ Table    │   │
+│  └──────────┘  │  │  └──────────┘     │   │  └──────────┘   │
+└────────────────┘  └───────────────────┘   └─────────────────┘
 ```
 
 ### Key Architectural Principles
@@ -174,9 +174,9 @@ The methodology is specifically designed for full-stack teams building scalable 
 ### Kanban Board States
 
 ```
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+┌──────────┐    ┌──────────┐   ┌──────────┐    ┌──────────┐   ┌──────────┐
 │ Backlog  │──▶│ To Do    │──▶│  Doing   │──▶│ Review   │──▶│  Done    │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
+└──────────┘    └──────────┘   └──────────┘    └──────────┘   └──────────┘
 ```
 
 ### State Transitions
@@ -198,7 +198,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 #### Step 1: Identify Actors
 
 **Participants**: Product Owner (Lead), Stakeholders  
-**Output**: `docs/project/actors.md`
+**Output**: `docs/project/specs/actors.md`
 
 **Activities**:
 
@@ -219,7 +219,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 - Travel Agent
 - Group Travel Coordinator
 
-**Template**: `docs/project/actors.md`
+**Template**: `docs/project/specs/actors.md`
 
 ```markdown
 # System Actors
@@ -308,11 +308,11 @@ so that their family can fly with maximum comfort and within budget.
 **Estimated Complexity**: Medium
 ```
 
-**Location**: `docs/backlog/job-stories/` (one file per job story)
+**Location**: `docs/project/specs/jobs/[actor]/[job-name]/job-card.md` (one file per job story)
 
 ### Exit Criteria
 
-- ✅ Actors documented in `docs/project/actors.md`
+- ✅ Actors documented in `docs/project/specs/actors.md`
 - ✅ Job stories created for each actor
 - ✅ Job stories prioritized in backlog
 - ✅ Top priority job stories ready to move to "To Do"
@@ -328,7 +328,7 @@ so that their family can fly with maximum comfort and within budget.
 ### Step 1: UI Mockups Creation
 
 **Participants**: Product Owner (Lead), Frontend UI, Designer  
-**Output**: `docs/specs/jobs/[job-id]/mockups/`
+**Output**: `docs/project/specs/jobs/[actor]/[job-name]/mockups/[page-name].png`
 
 **Activities**:
 
@@ -346,7 +346,8 @@ so that their family can fly with maximum comfort and within budget.
 
 **Tools**:
 
-- Figma (recommended)
+- UX Pilot (recommended)
+- Figma
 - Sketch
 - Adobe XD
 - Excalidraw (for quick sketches)
@@ -370,7 +371,7 @@ so that their family can fly with maximum comfort and within budget.
 ### Step 2: Create Entity-Relationship Diagram (ERD)
 
 **Participants**: Backend (Lead), Frontend BFF, Product Owner  
-**Output**: `docs/specs/jobs/[job-id]/erd.md`
+**Output**: `docs/project/specs/jobs/[actor]/[job-name]/erd.puml`
 
 **Activities**:
 
@@ -431,7 +432,7 @@ erDiagram
     }
 ```
 
-**Documentation Template**: `docs/specs/jobs/[job-id]/erd.md`
+**Documentation Template**: `docs/project/specs/jobs/[actor]/[job-name]/erd.md`
 
 ```markdown
 # Entity-Relationship Diagram
