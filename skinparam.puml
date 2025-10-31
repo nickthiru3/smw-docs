@@ -1,5 +1,13 @@
+' SMW PlantUML Configuration
+' Shared styling for all diagrams (sequence, ERD, etc.)
+' Include this file in diagrams with: !include path/to/skinparam.puml
+
+' Global font
+skinparam defaultFontName Arial
+
+' Sequence diagram styling
 skinparam sequence {
-    ArrowColor Black
+    ArrowColor #191970
     LifeLineBorderColor Black
     ParticipantBorderColor Black
     BoxBorderColor Black
@@ -9,4 +17,22 @@ skinparam sequence {
     ActorBorderColor Black
     ActorBackgroundColor White
     ActorFontColor Black
+}
+
+' ERD styling
+' Note: Entities use class skinparams for styling
+hide circle
+hide empty members
+
+skinparam padding 5
+
+skinparam class {
+    BackgroundColor #F0FFFF
+    BorderColor #555555
+    FontColor #191970
+}
+
+skinparam note {
+    BackgroundColor #f0f8ff
+    BorderColor #555555
 }

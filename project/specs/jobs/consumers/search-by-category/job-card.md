@@ -40,16 +40,25 @@ so I can quickly locate relevant providers that meet my specific needs.
 - **Phase 1b** Add enhanced filtering & sorting (sub-categories, availability toggles, result ordering) building on this job.
 - **Phase 2** Personalised search & saved journeys extend this foundation with saved filters, trending categories, and notifications.
 
-### Data Requirements Snapshot
+### Data Requirements Snapshot (Phase 1a - Consumer Search)
 
-- **Core identity** Mandatory fields at sign-up: legal name, trading name (optional), SSM/company number, business type, short description, primary circular-economy category, specific service types, verified owner contact (email + phone), and subscription tier selection.
-- **Geolocation & coverage** Every listing must supply primary address, GPS coordinates, and service-area radius; additional branches are optional but share the same structure. These attributes underpin Google Maps/Waze navigation and distance filters.
-- **Operational details** Required operating hours/days with optional schedule nuances (seasonal closures, appointments, delivery/pickup policies).
-- **Classification metadata** Accepted waste types, product tags, secondary categories, and keyword tags enable multi-filter search; tiers determine maximum counts (Basic vs Silver/Gold/Platinum).
-- **Trust & sustainability** Optional certifications, impact metrics, and verification badges surface as value-add signals; `MerchantMetrics` aggregates ratings, saves, check-ins for ordering.
-- **Media & promotions** Tier-governed limits for photos, videos, keywords, and promotional banners; managed via `MerchantMedia` and `Promotion` entities.
+**For this job, consumers need to see:**
 
-See `docs/project/research/circular-economy-merchant-attributes.md` for the full attribute catalogue and tier thresholds feeding the ER model in `merchants-search-service/docs/data-model/er-diagram.puml`.
+- **Core identity** Legal name, trading name (optional), short description, primary circular-economy category
+- **Geolocation** Primary address, GPS coordinates for distance calculation and map display
+- **Operational details** Operating hours/days for "open now" indicators
+- **Services** List of services offered (e.g., "Smartphone screen repair", "Laptop hardware diagnostics")
+- **Ratings & reviews** Average rating, review count, and individual reviews for trust signals
+
+**Deferred to merchant-specific jobs:**
+- Business registration details (SSM/company number, business type)
+- Verification status and badges (all merchants pre-verified for MVP)
+- Service area radius (consumers judge distance themselves)
+- Subscription tier details (admin-only concern)
+- Detailed waste types and product tags (focusing on service categories for MVP)
+- Certifications, impact metrics, promotional content
+
+See `docs/project/research/circular-economy-merchant-attributes.md` for the full attribute catalogue.
 
 ### Related Artefacts
 

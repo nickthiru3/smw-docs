@@ -1,50 +1,66 @@
 # Comprehensive Full-Stack Development Guide
 
-**Integrating SEED(S) Methodology, DynamoDB Data Modeling, UI-First Design, and Agile Practices**
-
----
+**A High-Level Methodology for Cross-Team Coordination and Design**
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Team Roles & Responsibilities](#team-roles--responsibilities)
-3. [Technology Stack](#technology-stack)
-4. [Architecture Overview](#architecture-overview)
-5. [Development Workflow](#development-workflow)
-6. [Phase 0: Pre-Backlog (Product Discovery)](#phase-0-pre-backlog-product-discovery)
-7. [Phase 1: Design & Requirements](#phase-1-design--requirements)
-8. [Phase 2: Technical Design](#phase-2-technical-design)
-9. [Phase 3: Validation](#phase-3-validation)
-10. [Phase 4: Implementation](#phase-4-implementation)
+1. [Introduction](#1-introduction)
+2. [Team Roles & Responsibilities](#2-team-roles--responsibilities)
+3. [Technology Stack](#3-technology-stack)
+4. [Architecture Overview](#4-architecture-overview)
+5. [Development Workflow](#5-development-workflow)
+6. [Phase 0: Requirements (Product Discovery)](#6-phase-0-requirements-product-discovery)
+7. [Phase 1: Conceptual Design](#phase-1-conceptual-design)
+8. [Phase 2: API Design & Contracts](#phase-2-api-design--contracts)
+9. [Phase 3: Validation & Alignment](#phase-3-validation--alignment)
+10. [Phase 4: Implementation & Testing](#phase-4-implementation--testing)
 11. [Artifact Repository Structure](#artifact-repository-structure)
 12. [Definition of Ready](#definition-of-ready)
 13. [Definition of Done](#definition-of-done)
 14. [Best Practices & Conventions](#best-practices--conventions)
 
----
+## 1. Introduction
 
-## Introduction
+This guide establishes a **high-level development methodology** for cross-functional teams to coordinate on feature design and delivery. It focuses on the collaborative design phases that enable teams to align on requirements, user experience, and API contracts **before** diving into detailed implementation.
 
-This guide establishes a unified development methodology that combines:
+### Purpose & Scope
 
-- **SEED(S) Process** (Seven Essential Evolutions of Design for Services) - Customer-centric service design methodology
-- **DynamoDB Single-Table Design** - NoSQL data modeling optimized for access patterns
-- **UI-First Approach** - Design-driven development starting with user interfaces
+**What this guide covers:**
+
+- Cross-team coordination and alignment processes
+- High-level design artifacts (mockups, ERDs, sequence diagrams, API specs)
+- Interface contracts between frontend, BFF, and backend layers
+- Shared understanding of requirements and user flows
+
+**What this guide does NOT cover:**
+
+- Detailed frontend architecture and component design (owned by Frontend team)
+- Detailed backend data modeling and infrastructure design (owned by Backend team)
+- Implementation-level technical decisions within each layer
+
+**Philosophy**: This methodology provides the **scaffolding for collaboration** at feature/job level. Once teams align on contracts and interfaces, they have autonomy to design and implement their respective layers using appropriate techniques and best practices for their domain.
+
+### Core Methodology
+
+This guide integrates:
+
+- **SEED(S) Process** - Customer-centric service design (Actors → Jobs → Experience → Design → Specification)
+- **Design-Driven Development** - Start with user experience and work backward to technical design
+- **Contract-First APIs** - Define interfaces before implementation
 - **Agile/Scrum** - Iterative delivery with continuous feedback
 
-The methodology is specifically designed for full-stack teams building scalable applications with SvelteKit (frontend + BFF) and microservices backends using AWS serverless services.
+The methodology is designed for full-stack teams building scalable applications with SvelteKit (frontend + BFF) and microservices backends using AWS serverless services.
 
 ### Key Principles
 
 1. **Customer-Centric Design**: Start with actors and their jobs to be done
-2. **Access Pattern-Driven Data Modeling**: Design data structures to match specific query needs
-3. **Early Validation**: Get feedback before expensive implementation work
-4. **Parallel Development**: Enable frontend and backend teams to work simultaneously
+2. **Early Validation**: Get feedback before expensive implementation work
+3. **Contract-First**: Define interfaces between components before implementation
+4. **Parallel Development**: Enable frontend and backend teams to work simultaneously after contracts are defined
 5. **Documentation as Code**: All artifacts version-controlled and maintainable
+6. **Team Autonomy**: Teams own detailed design and implementation within their layers
 
----
-
-## Team Roles & Responsibilities
+## 2. Team Roles & Responsibilities
 
 ### Product Owner (PO)
 
@@ -94,9 +110,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 - Ensure consistent visual language
 - Conduct usability testing
 
----
-
-## Technology Stack
+## 3. Technology Stack
 
 ### Frontend
 
@@ -126,9 +140,7 @@ The methodology is specifically designed for full-stack teams building scalable 
 - **API Gateway**: AWS API Gateway
 - **Authentication**: AWS Cognito or custom JWT
 
----
-
-## Architecture Overview
+## 4. Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -167,37 +179,18 @@ The methodology is specifically designed for full-stack teams building scalable 
 3. **No Direct Microservice-to-Microservice Calls**: All orchestration happens in the BFF layer
 4. **Single-Table Design per Service**: Each microservice typically uses one DynamoDB table
 
----
+## 5. Development Workflow
 
-## Development Workflow
+## Phase 0: Requirements (Product Discovery)
 
-### Kanban Board States
+**When**: Continuous activity driven by Product Owner
 
-```
-┌──────────┐    ┌──────────┐   ┌──────────┐    ┌──────────┐   ┌──────────┐
-│ Backlog  │──▶│ To Do    │──▶│  Doing   │──▶│ Review   │──▶│  Done    │
-└──────────┘    └──────────┘   └──────────┘    └──────────┘   └──────────┘
-```
-
-### State Transitions
-
-- **Backlog → To Do**: Job story meets Definition of Ready
-- **To Do → Doing**: Team begins active work on the job story
-- **Doing → Review**: Implementation complete, PR submitted
-- **Review → Done**: PR approved, merged, and meets Definition of Done
-
----
-
-## Phase 0: Pre-Backlog (Product Discovery)
-
-**When**: Continuous activity driven by Product Owner  
 **Goal**: Identify users and their needs, create prioritized backlog
 
-### SEED(S) Steps 1-2: Actors & Jobs to Be Done
+### Step 1: Identify Actors
 
-#### Step 1: Identify Actors
+**Participants**: Product Owner (Lead), Stakeholders
 
-**Participants**: Product Owner (Lead), Stakeholders  
 **Output**: `docs/project/specs/actors.md`
 
 **Activities**:
@@ -247,9 +240,10 @@ The methodology is specifically designed for full-stack teams building scalable 
 ...
 ```
 
-#### Step 2: Identify Jobs to Be Done (JTBDs)
+### Step 2: Identify Jobs to Be Done (JTBDs)
 
-**Participants**: Product Owner (Lead), Actors/Stakeholders  
+**Participants**: Product Owner (Lead), Actors/Stakeholders
+
 **Output**: Job story cards in backlog
 
 **Activities**:
@@ -272,40 +266,103 @@ When [circumstance],
 I want to [motivation],  
 so I can [goal].
 
+**Priority**: [High/Medium/Low]
+
+**Estimated Complexity**: [Small/Medium/Large]
+
 **Acceptance Criteria**:
 
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
 
-**Priority**: [High/Medium/Low]
+---
 
-**Estimated Complexity**: [Small/Medium/Large]
+## Extended Requirements
+
+### Business Rules
+
+[Detailed business logic and constraints]
+
+### Implementation Notes & Assumptions
+
+[Technical assumptions, MVP scope, dependencies]
+
+### Phase Scope
+
+[How this job evolves across phases]
+
+### Data Requirements Snapshot
+
+[Key data fields and structures needed]
+
+### Related Artefacts
+
+[Links to sequence diagrams, APIs, ERDs, etc.]
 ```
 
 **Example**:
 
 ```markdown
-# Job Story: Filter Flights for Family Vacation
+# Job Story: Search by Category
 
-**Actor**: Family Vacationer
+**Actor**: Consumer
 
 **Job Story**:  
-When Riley is planning a flight for their family vacation,  
-I want to filter available flights by multiple criteria (price, duration, layovers),  
-so that their family can fly with maximum comfort and within budget.
-
-**Acceptance Criteria**:
-
-- [ ] User can filter by price range
-- [ ] User can filter by maximum number of layovers
-- [ ] User can filter by departure time windows
-- [ ] User can sort results by price, duration, or departure time
-- [ ] Filters update results in real-time
+When a consumer needs to find circular-economy services nearby,  
+I want to search by combining category, waste type, product, and distance filters,  
+so I can quickly locate relevant providers that meet my specific needs.
 
 **Priority**: High
 
-**Estimated Complexity**: Medium
+**Estimated Complexity**: Large
+
+**Acceptance Criteria**:
+
+- [ ] Users can filter listings by Release 1 categories (Repair, Refill/Grocery, Recycling, Donate) and see matching results
+- [ ] Users can combine category, waste type, product tags, and distance filters in a single query
+- [ ] Distance filtering offers preset radii (e.g., 5km, 10km, 25km) based on user location
+- [ ] Results show key listing fields: name, category tags, distance, verification badge (if available)
+- [ ] Selecting a result opens the listing detail view (handled by separate job) without losing current filters
+- [ ] Search supports both map and list presentations, kept in sync when filters change
+
+---
+
+## Extended Requirements
+
+### Business Rules
+
+### Implementation Notes & Assumptions
+
+- MVP uses auto-approved listings; manual verification workflow will arrive later.
+- Initial implementation uses a mocked merchant directory (flat file or in-memory dataset). Future iterations will integrate with the Users service (Cognito + DynamoDB) and/or dedicated search indices.
+- For early iterations, assume location permissions are granted; fallback UX needed for manual location entry.
+- Requires baseline taxonomy for categories, waste types, and product tags sourced during dataset ingestion.
+- Backend ownership: `Merchants Search Service` (`merchants-search-service/`) exposes `/search/merchants` per the OpenAPI contract.
+
+### Phase Scope
+
+- **Phase 1a (MVP)** Deliver combined filters with list/map parity, mocked dataset, and DoR artefacts (sequence diagram, actions/queries, access patterns, OpenAPI, ERD).
+- **Phase 1b** Add enhanced filtering & sorting (sub-categories, availability toggles, result ordering) building on this job.
+- **Phase 2** Personalised search & saved journeys extend this foundation with saved filters, trending categories, and notifications.
+
+### Data Requirements Snapshot
+
+- **Core identity** Mandatory fields at sign-up: legal name, trading name (optional), SSM/company number, business type, short description, primary circular-economy category, specific service types, verified owner contact (email + phone), and subscription tier selection.
+- **Geolocation & coverage** Every listing must supply primary address, GPS coordinates, and service-area radius; additional branches are optional but share the same structure. These attributes underpin Google Maps/Waze navigation and distance filters.
+- **Operational details** Required operating hours/days with optional schedule nuances (seasonal closures, appointments, delivery/pickup policies).
+- **Classification metadata** Accepted waste types, product tags, secondary categories, and keyword tags enable multi-filter search; tiers determine maximum counts (Basic vs Silver/Gold/Platinum).
+- **Trust & sustainability** Optional certifications, impact metrics, and verification badges surface as value-add signals; `MerchantMetrics` aggregates ratings, saves, check-ins for ordering.
+- **Media & promotions** Tier-governed limits for photos, videos, keywords, and promotional banners; managed via `MerchantMedia` and `Promotion` entities.
+
+See `docs/project/research/circular-economy-merchant-attributes.md` for the full attribute catalogue and tier thresholds feeding the ER model in `merchants-search-service/docs/data-model/er-diagram.puml`.
+
+### Related Artefacts
+
+- Sequence diagram: `docs/project/specs/jobs/consumers/search-by-category/sequence-diagram.puml`.
+- API contract: `merchants-search-service/docs/api/openapi.yml` (TBD extension for this job).
+- Data model notes: align with listing schema updates when defined.
+- Status board entry: `docs/project/status-board.md`.
 ```
 
 **Location**: `docs/project/specs/jobs/[actor]/[job-name]/job-card.md` (one file per job story)
@@ -317,17 +374,16 @@ so that their family can fly with maximum comfort and within budget.
 - ✅ Job stories prioritized in backlog
 - ✅ Top priority job stories ready to move to "To Do"
 
----
+## Phase 1: Conceptual Design
 
-## Phase 1: Design & Requirements
+**When**: Job story moves from "To Do" → "Doing"
 
-**When**: Job story moves from "To Do" → "Doing"  
-**Goal**: Understand what to build from user and data perspectives  
-**Duration**: 1-3 days depending on complexity
+**Goal**: Understand what to build from user and data perspectives
 
-### Step 1: UI Mockups Creation
+### Step 3: UI Mockups Creation
 
-**Participants**: Product Owner (Lead), Frontend UI, Designer  
+**Participants**: Product Owner (Lead), Frontend UI, Designer
+
 **Output**: `docs/project/specs/jobs/[actor]/[job-name]/mockups/[page-name].png`
 
 **Activities**:
@@ -368,236 +424,95 @@ so that their family can fly with maximum comfort and within budget.
 - Key user interactions
 - Design decisions and rationale
 
-### Step 2: Create Entity-Relationship Diagram (ERD)
+### Step 4: Data Modeling
 
-**Participants**: Backend (Lead), Frontend BFF, Product Owner  
-**Output**: `docs/project/specs/jobs/[actor]/[job-name]/erd.puml`
+**Participants**: Backend (Lead), Frontend BFF, Product Owner
 
-**Activities**:
+**Outputs**:
 
-1. Review UI mockups to understand application needs
-2. Identify main entities (nouns) in the system
-3. Define relationships between entities:
-   - One-to-one
-   - One-to-many
-   - Many-to-many
-4. Create ERD showing:
-   - Entity boxes
-   - Relationship lines with cardinality
-   - Key attributes (optional - keep minimal)
-5. Document relationship types and constraints
+- `docs/project/specs/erd.puml` - Application-level ERD
+- `docs/project/specs/entity-key-table.md` - Master entity-key reference
+- `docs/project/specs/entities/<entity>.md` - Entity files with keys, GSIs, access patterns
 
-**Guidelines**:
+**Overview**:
 
-- Focus on relationships, not exhaustive attributes
-- Use standard ERD notation (crow's foot)
-- Keep it simple and focused on this job story's needs
-- Can be added to over time as more patterns emerge
+Data modeling for DynamoDB is fundamentally different from relational databases. You must define your access patterns BEFORE designing your table structure. This step involves creating an ERD, defining access patterns, designing primary keys, and documenting entities comprehensively.
 
-**Tools**:
+**SMW Approach**:
 
-- Mermaid (text-based, version-controllable)
-- Lucidchart
-- Draw.io
-- PlantUML
+The SMW project uses the **Faux-SQL DynamoDB approach** (multiple tables, descriptive key names, normalized data) for development velocity and team familiarity. This approach allows incremental modeling—you don't need ALL access patterns upfront, and you can add GSIs as features evolve.
 
-**Example ERD (Mermaid)**:
+**Follow the Data Modeling Guide**:
 
-```mermaid
-erDiagram
-    USER ||--o{ ORDER : places
-    USER {
-        string userId PK
-        string email
-        string name
-    }
-    ORDER ||--|{ ORDER_ITEM : contains
-    ORDER {
-        string orderId PK
-        string userId FK
-        date orderDate
-        string status
-    }
-    ORDER_ITEM {
-        string orderItemId PK
-        string orderId FK
-        string productId FK
-        int quantity
-    }
-    PRODUCT ||--o{ ORDER_ITEM : "ordered in"
-    PRODUCT {
-        string productId PK
-        string name
-        decimal price
-    }
-```
+📖 **Start here**: [`docs/guides/data-modeling/README.md`](../../data-modeling/README.md)
 
-**Documentation Template**: `docs/project/specs/jobs/[actor]/[job-name]/erd.md`
+The data modeling guide provides:
 
-```markdown
-# Entity-Relationship Diagram
+- **Approach guide**: Faux-SQL methodology and when to use it
+- **Phase guides**: Step-by-step process (Phase 1: ERD & Access Patterns, Phase 2: Keys & Schemas)
+- **Technique guides**: Detailed how-tos for ERD creation, access patterns, primary keys, relationships, GSIs
+- **Examples and templates**: Real-world patterns and anti-patterns
 
-## Entities
+**Key Workflow**:
 
-### Entity 1: [Name]
+1. **Choose approach** → Read [Faux-SQL guide](../../data-modeling/faux-sql-dynamodb-modeling.md)
+2. **Create/update ERD** → Application-level `docs/project/specs/erd.puml` (PlantUML, no attributes)
+3. **Define access patterns** → Document in entity files per entity
+4. **Design primary keys** → Update entity-key table and entity files
+5. **Create entity files** → `docs/project/specs/entities/<entity>.md` with:
+   - Entity-key table (main table + GSIs)
+   - Access patterns
+   - Design decisions and rationale
+   - Query examples
 
-Brief description of this entity and its purpose.
+**Key Artifacts**:
 
-**Key Attributes**:
+| Artifact                | Purpose                            | Location                                 |
+| ----------------------- | ---------------------------------- | ---------------------------------------- |
+| Application ERD         | Visual entity relationships        | `docs/project/specs/erd.puml`            |
+| Master Entity-Key Table | Quick reference for all entities   | `docs/project/specs/entity-key-table.md` |
+| Entity Files            | Comprehensive entity documentation | `docs/project/specs/entities/*.md`       |
 
-- attribute1
-- attribute2
+**Entity Files Structure**:
 
-### Entity 2: [Name]
+Each entity file (e.g., `merchants.md`, `reviews.md`) contains:
 
-...
+- Main table entity-key structure
+- GSI definitions with rationale
+- Access patterns with query examples
+- Design decisions log
+- Evolution history (which jobs modified this entity)
 
-## Relationships
+**Important Notes**:
 
-### [Entity1] → [Entity2]
-
-- **Type**: One-to-Many
-- **Description**: One Entity1 can have many Entity2
-- **Example**: One User can place many Orders
-
-### [Entity2] → [Entity3]
-
-...
-
-## ERD Diagram
-
-[Include Mermaid diagram or image here]
-
-## Notes
-
-- Any special considerations
-- Future extensions
-- Known limitations
-```
-
-### Step 3: Define Access Patterns
-
-**Participants**: Product Owner, Frontend UI, Frontend BFF (Lead), Backend  
-**Output**: `docs/specs/jobs/[job-id]/access-patterns.md`
-
-**Activities**:
-
-1. **UI-Centric Approach** (Recommended):
-   - Look at each screen from UI mockups
-   - Identify the URL for each screen
-   - List ALL data needed to build each screen
-   - Document how data will be accessed
-2. For each screen, ask:
-
-   - What data is displayed?
-   - What filters or sorts are applied?
-   - What user actions trigger data changes?
-   - Are there any pagination requirements?
-   - What happens on error states?
-
-3. Document each access pattern with:
-   - Pattern name
-   - Description
-   - Input parameters
-   - Expected output
-   - Frequency/volume estimates
-   - Performance requirements
-
-**Critical Rule**:
-
-> Define ALL access patterns upfront. Failure to do this correctly may lead to problems down the line as you find your DynamoDB table isn't as flexible to new patterns as your relational database was.
-
-**Format**: Create a comprehensive chart
-
-| Access Pattern   | Parameters            | Response Shape             | Index               | Notes                        |
-| ---------------- | --------------------- | -------------------------- | ------------------- | ---------------------------- |
-| Get User Profile | userId                | User object with addresses | Main table          | Primary lookup               |
-| List User Orders | userId, limit, cursor | Paginated list of Orders   | GSI1                | Sorted by date desc          |
-| Search Products  | searchTerm, category  | List of Products           | Main table + filter | May need ElasticSearch later |
-
-**Template**: `docs/specs/jobs/[job-id]/access-patterns.md`
-
-````markdown
-# Access Patterns
-
-## Overview
-
-Brief description of the data access needs for this job story.
-
-## Pattern 1: [Pattern Name]
-
-**Description**: What this pattern accomplishes
-
-**Trigger**: When/how is this pattern invoked
-
-**Input Parameters**:
-
-- parameter1: type - description
-- parameter2: type - description
-
-**Expected Output**:
-
-```json
-{
-  "field1": "value",
-  "field2": "value",
-  "nestedObject": {
-    "field3": "value"
-  }
-}
-```
-````
-
-**Frequency**: Estimated requests per second/day
-
-**Performance Requirement**: Target response time
-
-**Index**: [Main table / GSI1 / GSI2 / etc.] (to be determined in Phase 2)
-
-**Notes**:
-
-- Any special considerations
-- Edge cases
-- Future enhancements
-
----
-
-## Pattern 2: [Pattern Name]
-
-...
-
-## Summary Table
-
-| Pattern   | Parameters | Index | Performance Target | Priority |
-| --------- | ---------- | ----- | ------------------ | -------- |
-| Pattern 1 | userId     | TBD   | <50ms              | High     |
-| Pattern 2 | orderId    | TBD   | <100ms             | Medium   |
-
-````
-
-**Important**: Access patterns are defined BEFORE data model design. The data model will be designed to satisfy these patterns.
+- **ERD is application-level**, not job-level (evolves as jobs add entities)
+- **Entity files are project-level**, not job-level (shared across all jobs)
+- **Access patterns are entity-specific**, documented in entity files
+- Jobs create/update entity files as they introduce new entities or access patterns
 
 ### Exit Criteria for Phase 1
 
 - ✅ UI mockups created for all user flows
-- ✅ ERD created showing entities and relationships
-- ✅ ALL access patterns documented comprehensively
-- ✅ Team alignment on requirements
+- ✅ ERD updated with new entities (if any) at `docs/project/specs/erd.puml`
+- ✅ Entity files created/updated with access patterns at `docs/project/specs/entities/`
+- ✅ Master entity-key table updated at `docs/project/specs/entity-key-table.md`
+- ✅ Team alignment on data model and requirements
 
----
-
-## Phase 2: Technical Design
+## Phase 2: API Design & Contracts
 
 **When**: After Phase 1 complete
-**Goal**: Design the technical implementation
+**Goal**: Define API contracts and component interactions for cross-team alignment
 **Duration**: 2-4 days depending on complexity
 
-### Step 4: Sequence Diagrams (SEED(S) Step 3)
+**Scope**: This phase focuses on **interface design** between components (UI ↔ BFF ↔ Backend). Detailed technical design and implementation within each layer (frontend architecture, backend data modeling, infrastructure) happens during development by respective teams.
+
+### Step 5: Sequence Diagrams
 
 **Participants**: Frontend BFF (Lead), Backend
 **Output**: `docs/specs/jobs/[job-id]/sequence-diagrams/`
 
 **Activities**:
+
 1. For each major user interaction from mockups:
    - Create sequence diagram showing component interactions
    - Show flow: UI → BFF → Microservice(s) → Database
@@ -609,12 +524,14 @@ Brief description of the data access needs for this job story.
    - Authentication/authorization points
 
 **Guidelines**:
+
 - Focus on technical interactions, not business logic
 - Show synchronous vs asynchronous calls
 - Include error paths
 - Annotate timing-sensitive operations
 
 **Tools**:
+
 - PlantUML (recommended)
 - Mermaid
 - Excalidraw
@@ -659,7 +576,7 @@ UI --> User: Display success
 deactivate UI
 
 @enduml
-````
+```
 
 **File Naming**:
 
@@ -675,9 +592,10 @@ deactivate UI
 - Key architectural decisions
 - Component responsibilities
 
-### Step 5: Actions & Queries (SEED(S) Step 4)
+### Step 6: Actions & Queries
 
-**Participants**: Frontend BFF (Lead), Backend  
+**Participants**: Frontend BFF (Lead), Backend
+
 **Output**: `docs/specs/jobs/[job-id]/actions-queries.md`
 
 **Activities**:
@@ -727,7 +645,6 @@ deactivate UI
   "field2": "value"
 }
 ```
-````
 
 **Error Cases**:
 
@@ -743,6 +660,8 @@ deactivate UI
 ### Query 2: [Query Name]
 
 ...
+
+---
 
 ## Actions
 
@@ -796,253 +715,25 @@ deactivate UI
 | Get User Profile    | Query  | No             | Yes                        | High     |
 | Create Order        | Action | Yes            | No                         | High     |
 | Update Order Status | Action | Yes            | Yes (with idempotency key) | Medium   |
-
 ````
 
 **Guidelines**:
+
 - Clearly separate queries from actions
 - Document all side effects for actions
 - Specify idempotency behavior
 - Note transaction requirements
 - Consider error handling strategies
 
-### Step 6: Design DynamoDB Data Model
-
-**Participants**: Backend (Lead), Frontend BFF (Review)
-**Output**: `docs/specs/jobs/[job-id]/data-model.md`
-
-**Activities**:
-
-1. **Decide Primary Key Structure**:
-   - Simple (partition key only) vs Composite (partition + sort key)
-   - Most applications use composite primary key
-
-2. **Ask Three Key Questions**:
-   - Should I use a simple or composite primary key?
-   - What interesting requirements do I have? (uniqueness, time-based access, relationships)
-   - Which entity should I start modeling first?
-
-3. **Create Entity Chart**:
-   - List all entities from ERD
-   - Define primary key pattern for each entity type
-   - Track in a table
-
-4. **Model Primary Key Patterns**:
-   - Choose starting entity (typically a "core" entity that is parent in relationships)
-   - Design primary key structure to handle access patterns
-   - Use generic names: `PK`, `SK` for attributes
-   - Use prefixes to distinguish entity types (e.g., `USER#`, `ORDER#`)
-
-5. **Add Secondary Indexes**:
-   - Only after exhausting primary key options
-   - Use generic names: `GSI1PK`, `GSI1SK`
-   - Overload indexes to handle multiple patterns
-   - Document which patterns each index handles
-
-6. **Design for Access Patterns**:
-   - Each access pattern should map to table or index
-   - Minimize number of requests per pattern (ideally 1)
-   - Consider item collections for related data
-
-7. **Document with Examples**:
-   - Show actual item structures
-   - Include sample primary key values
-   - Demonstrate how queries would work
-
-**Critical Principles**:
-> "You design your data to handle the specific access patterns you have, rather than designing for flexibility in the future."
-
-> "When using a relational database, you can usually just ship your ERD straight to the database... This is not the case when data modeling in DynamoDB."
-
-**Template**: `docs/specs/jobs/[job-id]/data-model.md`
-
-```markdown
-# DynamoDB Data Model
-
-## Overview
-Brief description of the data model design decisions.
-
-## Table Structure
-
-**Table Name**: `[ServiceName]Table`
-
-**Primary Key**:
-- Partition Key (PK): [Description of what goes here]
-- Sort Key (SK): [Description of what goes here]
-
-**Global Secondary Indexes**:
-
-### GSI1
-- Partition Key (GSI1PK): [Description]
-- Sort Key (GSI1SK): [Description]
-- **Purpose**: Handles access patterns [list patterns]
-
-### GSI2
-- Partition Key (GSI2PK): [Description]
-- Sort Key (GSI2SK): [Description]
-- **Purpose**: Handles access patterns [list patterns]
-
-## Entity Chart
-
-| Entity | PK | SK | GSI1PK | GSI1SK | Notes |
-|--------|----|----|--------|--------|-------|
-| User | USER#\{userId\} | USER#\{userId\} | - | - | Main entity |
-| Order | CUSTOMER#\{userId\} | ORDER#\{orderId\} | ORDER#\{orderId\} | ORDER#\{orderId\} | Customer's orders |
-| OrderItem | ORDER#\{orderId\} | ITEM#\{itemId\} | ORDER#\{orderId\} | ITEM#\{itemId\} | Items in order |
-
-## Entity Details
-
-### User
-
-**Purpose**: Represents a user account
-
-**Primary Key Structure**:
-- PK: `USER#{userId}`
-- SK: `USER#{userId}`
-
-**Attributes**:
-- userId (String): Unique identifier
-- email (String): User email
-- name (String): User full name
-- createdAt (String): ISO 8601 timestamp
-
-**Example Item**:
-```json
-{
-  "PK": "USER#user_123",
-  "SK": "USER#user_123",
-  "Type": "User",
-  "userId": "user_123",
-  "email": "user@example.com",
-  "name": "John Doe",
-  "createdAt": "2024-01-15T10:30:00Z"
-}
-````
-
 ---
 
-### Order
-
-**Purpose**: Represents a customer order
-
-**Primary Key Structure**:
-
-- PK: `CUSTOMER#{userId}` - Groups all orders for a customer
-- SK: `ORDER#{orderId}` - Unique order identifier with timestamp for sorting
-
-**GSI1 Structure**:
-
-- GSI1PK: `ORDER#{orderId}` - Direct order lookup
-- GSI1SK: `ORDER#{orderId}`
-
-**Attributes**:
-
-- orderId (String): Unique order ID (KSUID format for sorting)
-- userId (String): Customer who placed order
-- totalAmount (Number): Order total
-- status (String): Order status (pending, confirmed, shipped, delivered)
-- createdAt (String): ISO 8601 timestamp
-
-**Example Item**:
-
-```json
-{
-  "PK": "CUSTOMER#user_123",
-  "SK": "ORDER#1YnlHOfSSk3DhX4BR6lMAceAo1V",
-  "GSI1PK": "ORDER#1YnlHOfSSk3DhX4BR6lMAceAo1V",
-  "GSI1SK": "ORDER#1YnlHOfSSk3DhX4BR6lMAceAo1V",
-  "Type": "Order",
-  "orderId": "1YnlHOfSSk3DhX4BR6lMAceAo1V",
-  "userId": "user_123",
-  "totalAmount": 99.99,
-  "status": "pending",
-  "createdAt": "2024-01-15T14:22:00Z"
-}
-```
-
----
-
-### OrderItem
-
-...
-
-## Access Pattern Mapping
-
-| Access Pattern    | Implementation | Index      | Parameters                                  | Notes                       |
-| ----------------- | -------------- | ---------- | ------------------------------------------- | --------------------------- |
-| Get User Profile  | GetItem        | Main table | PK=USER#{userId}, SK=USER#{userId}          | Single item retrieval       |
-| List User Orders  | Query          | Main table | PK=CUSTOMER#{userId}, SK begins_with ORDER# | Returns all orders for user |
-| Get Order Details | Query          | GSI1       | GSI1PK=ORDER#{orderId}                      | Returns order + all items   |
-
-## Design Decisions
-
-### Item Collections
-
-**User + Orders Collection**:
-
-- All orders for a user stored in same partition: `CUSTOMER#{userId}`
-- Enables fetching user's orders in single Query
-- Sort key pattern allows chronological ordering
-
-### Uniqueness Constraints
-
-[Document any uniqueness requirements and how they're enforced]
-
-### Reference Counts
-
-[Document any reference count patterns used]
-
-### Relationships
-
-#### User → Orders (One-to-Many)
-
-- Strategy: Composite primary key with item collection
-- Implementation: Orders use `PK=CUSTOMER#{userId}` to co-locate with user
-- Supports: Fetch user and all orders in single Query
-
-#### Order → OrderItems (One-to-Many)
-
-- Strategy: Composite sort key
-- Implementation: Items use `PK=ORDER#{orderId}`, `SK=ITEM#{itemId}`
-- Supports: Fetch order and all items in single Query using GSI1
-
-## Capacity Planning
-
-**Read Patterns**:
-
-- Pattern 1: ~100 req/sec, 4KB per request = 100 RCU
-- Pattern 2: ~50 req/sec, 8KB per request = 100 RCU
-- **Total Estimated**: 200 RCU
-
-**Write Patterns**:
-
-- Pattern 1: ~20 req/sec, 2KB per request = 40 WCU
-- Pattern 2: ~10 req/sec, 1KB per request = 10 WCU
-- **Total Estimated**: 50 WCU
-
-## Notes
-
-- Using KSUID for orderId to get sortable unique identifiers
-- Type attribute added to all items for filtering and debugging
-- Indexing attributes (PK, SK, GSI\*) separate from application attributes
-
-````
-
-**Best Practices**:
-
-1. **Separate indexing attributes from application attributes**
-2. **Implement at application boundary** - transform DynamoDB items to app objects at edges
-3. **Don't reuse attributes across indexes**
-4. **Add Type attribute to every item** for filtering and debugging
-5. **Use prefixes** (USER#, ORDER#) to distinguish entity types
-6. **Write debugging scripts** to help explore data
-
-### Step 7: API Specification (SEED(S) Step 5)
+### Step 7: API Specification
 
 **Participants**: Frontend BFF (Lead), Backend
 **Output**: `docs/specs/jobs/[job-id]/api.yml`
 
 **Activities**:
+
 1. Formalize interface contracts using **OpenAPI Specification (OAS) 3.0+**
 2. Based on:
    - Sequence diagrams (component interactions)
@@ -1057,6 +748,7 @@ Brief description of the data model design decisions.
    - Examples
 
 **Why After Data Model?**:
+
 - Data model reveals what the API can efficiently return
 - Ensures API design aligns with DynamoDB access pattern constraints
 - Prevents promising response shapes that are inefficient to fulfill
@@ -1254,7 +946,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-````
+```
 
 **Tools**:
 
@@ -1292,22 +984,24 @@ Once API spec is complete:
 
 ---
 
-## Phase 3: Validation (SEED(S) Step 6)
+## Phase 3: Validation & Alignment
 
-**When**: After Phase 2 complete, before implementation  
-**Goal**: Validate design with stakeholders before expensive coding begins  
-**Duration**: 1-2 days
+**When**: After Phase 2 complete, before implementation
+
+**Goal**: Validate design with stakeholders before expensive coding begins
 
 ### Step 8: Feedback & Validation
 
-**Participants**: Product Owner (Lead), All team members  
+**Participants**: Product Owner (Lead), All team members
+
 **Output**: `docs/specs/jobs/[job-id]/feedback-log.md`
 
 **Activities**:
 
 #### 8.1: End User Feedback
 
-**Participants**: Product Owner, End Users/Stakeholders, Designer  
+**Participants**: Product Owner, End Users/Stakeholders, Designer
+
 **Focus**: Job stories and UI mockups
 
 **Questions to Validate**:
@@ -1334,7 +1028,8 @@ Once API spec is complete:
 
 #### 8.2: Client Developer Feedback
 
-**Participants**: Frontend UI, Frontend BFF (Lead feedback collection), Backend  
+**Participants**: Frontend UI, Frontend BFF (Lead feedback collection), Backend
+
 **Focus**: API contracts, sequence diagrams, data model
 
 **Questions to Validate**:
@@ -1446,11 +1141,11 @@ Any additional context or decisions made.
 
 ---
 
-## Phase 4: Implementation (SEED(S) Step 7)
+## Phase 4: Implementation & Testing
 
-**When**: After validation sign-off  
-**Goal**: Build, test, and deploy the feature  
-**Duration**: Variable based on complexity
+**When**: After validation sign-off
+
+**Goal**: Build, test, and deploy the feature
 
 ### Step 9: Parallel Implementation
 
@@ -1458,7 +1153,8 @@ Any additional context or decisions made.
 
 #### 9.1: Frontend UI Implementation
 
-**Responsibilities**: Frontend UI Developer  
+**Responsibilities**: Frontend UI Developer
+
 **Location**: `src/routes/[feature]/`
 
 **Activities**:
@@ -1519,7 +1215,8 @@ describe("FeatureForm", () => {
 
 #### 9.2: Frontend BFF Implementation
 
-**Responsibilities**: Frontend BFF Developer  
+**Responsibilities**: Frontend BFF Developer
+
 **Location**: `src/routes/api/[endpoint]/`
 
 **Activities**:
@@ -1652,7 +1349,8 @@ describe("POST /api/orders", () => {
 
 #### 9.3: Backend Implementation
 
-**Responsibilities**: Backend Engineer  
+**Responsibilities**: Backend Engineer
+
 **Location**: `services/[service-name]/`
 
 **Activities**:
@@ -1876,7 +1574,8 @@ describe("createOrder", () => {
 
 #### 9.4: QA Testing
 
-**Responsibilities**: QA Engineer  
+**Responsibilities**: QA Engineer
+
 **Activities**:
 
 1. Review all artifacts for testability
@@ -1910,7 +1609,8 @@ describe("createOrder", () => {
 
 ### TC1: [Test Case Title]
 
-**Priority**: High/Medium/Low  
+**Priority**: High/Medium/Low
+
 **Type**: Functional/Integration/E2E
 
 **Preconditions**:
@@ -2152,7 +1852,7 @@ A job story is ready to move from "To Do" to "Doing" when:
   - Every screen's data needs captured
   - Input/output shapes defined
 
-### Phase 2: Technical Design Complete
+### Phase 2: API Design Complete
 
 - ✅ **Sequence diagrams** created for key user flows (SEED(S) Step 3)
 - ✅ **Actions and Queries** separated per CQS principle (SEED(S) Step 4)

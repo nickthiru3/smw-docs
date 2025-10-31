@@ -1,0 +1,142 @@
+@startuml merchants-search-er
+title Merchants Search Service – Conceptual Data Model
+
+hide circle
+skinparam entity {
+  BackgroundColor #f8f8f8
+  BorderColor #555555
+  FontColor #222222
+}
+
+entity "Merchant" as Merchant {
+  *PK: MERCHANT#<MerchantId>
+  *SK: METADATA
+  --
+  MerchantId: string
+  LegalName: string
+  TradingName: string?
+  PrimaryCategory: CECategory
+  VerificationStatus: enum [Pending|Verified|Rejected]
+  SubscriptionTier: enum [Basic|Silver|Gold|Platinum]
+  CreatedAt: datetime
+  UpdatedAt: datetime
+}
+
+entity "MerchantContact" as MerchantContact {
+  *PK: MERCHANT#<MerchantId>
+  *SK: CONTACT#primary
+  --
+  PhoneNumber: string
+  WhatsAppNumber: string?
+  Email: string
+  WebsiteUrl: string?
+  FacebookUrl: string?
+  InstagramHandle: string?
+}
+
+entity "MerchantLocation" as MerchantLocation {
+  *PK: MERCHANT#<MerchantId>
+  *SK: LOCATION#<LocationId>
+  --
+  LocationId: string
+  AddressLine1: string
+  AddressLine2: string?
+  City: string
+  State: string
+  PostalCode: string
+  CountryCode: string
+  Latitude: number
+  Longitude: number
+  ServiceAreaRadiusKm: number
+  IsPrimary: boolean
+}
+
+entity "MerchantService" as MerchantService {
+  *PK: MERCHANT#<MerchantId>
+  *SK: SERVICE#<ServiceTypeId>
+  --
+  ServiceTypeId: string
+  ServiceTypeName: string
+  Description: string?
+  AcceptedWasteTypes: string[]
+  ProductTags: string[]
+}
+
+entity "MerchantKeyword" as MerchantKeyword {
+  *PK: MERCHANT#<MerchantId>
+  *SK: KEYWORD#<Keyword>
+  --
+  Keyword: string
+  TierRankWeight: number?
+}
+
+entity "MerchantCertification" as MerchantCertification {
+  *PK: MERCHANT#<MerchantId>
+  *SK: CERT#<CertificationId>
+  --
+  CertificationId: string
+  CertificationName: string
+  Issuer: string
+  IssuedDate: date?
+  ExpiryDate: date?
+  Type: enum [Environmental|Social|Regulatory]
+}
+
+entity "MerchantSubscription" as MerchantSubscription {
+  *PK: MERCHANT#<MerchantId>
+  *SK: SUBSCRIPTION#<Version>
+  --
+  Version: number
+  Tier: enum [Basic|Silver|Gold|Platinum]
+  StartDate: date
+  EndDate: date
+  PaymentStatus: enum [Active|Pending|Expired]
+  ContentUpdateAllowance: number
+}
+
+entity "MerchantMedia" as MerchantMedia {
+  *PK: MERCHANT#<MerchantId>
+  *SK: MEDIA#<MediaId>
+  --
+  MediaId: string
+  MediaType: enum [Logo|Photo|Video|Tour]
+  Url: string
+  AltText: string?
+  IsFeatured: boolean
+}
+
+entity "MerchantMetrics" as MerchantMetrics {
+  *PK: MERCHANT#<MerchantId>
+  *SK: METRICS#AGGREGATE
+  --
+  RatingAverage: number
+  RatingCount: number
+  SavesCount: number
+  CheckinsCount: number
+  ViewsCount: number
+  LastVerificationDate: date?
+}
+
+entity "Promotion" as Promotion {
+  *PK: MERCHANT#<MerchantId>
+  *SK: PROMO#<PromotionId>
+  --
+  PromotionId: string
+  Title: string
+  Description: string
+  StartsAt: datetime
+  EndsAt: datetime
+  IsActive: boolean
+}
+
+Merchant ||--o{ MerchantContact : "has"
+Merchant ||--o{ MerchantLocation : "operates at"
+Merchant ||--o{ MerchantService : "offers"
+Merchant ||--o{ MerchantKeyword : "tagged with"
+Merchant ||--o{ MerchantCertification : "holds"
+Merchant ||--o{ MerchantSubscription : "subscribes"
+Merchant ||--o{ MerchantMedia : "publishes"
+Merchant ||--|| MerchantMetrics : "aggregates"
+Merchant ||--o{ Promotion : "runs"
+
+@enduml

@@ -1,0 +1,17 @@
+@startuml smw-erd
+!include ../../skinparam.puml
+
+title SMW Application – Entity-Relationship Diagram
+
+' Following Guide 1: ERD Creation - No attributes, only entities and relationships
+' This ERD evolves as jobs add new entities and relationships
+
+entity Merchant {
+}
+
+entity Review {
+}
+
+Merchant ||--o{ Review : "receives"
+
+@enduml
