@@ -1,0 +1,4 @@
+ValidationError:
+  $ref: "./validation-error.yaml"
+InternalServerError:
+  $ref: "./internal-server-error.yaml"

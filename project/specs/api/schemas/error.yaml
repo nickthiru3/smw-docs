@@ -1,0 +1,24 @@
+type: object
+description: Standard error response format
+required:
+  - error
+  - message
+  - code
+properties:
+  error:
+    type: string
+    description: Error type or category
+    example: "Invalid category"
+  message:
+    type: string
+    description: Human-readable error message
+    example: "Category must be one of: Repair, Refill, Recycling, Donate"
+  code:
+    type: string
+    description: Machine-readable error code
+    example: "INVALID_CATEGORY"
+  details:
+    type: object
+    description: Additional error context (optional)
+    additionalProperties: true
+    nullable: true

@@ -1,0 +1,11 @@
+# path
+
+# query
+category:
+  $ref: "./query/category.yaml"
+
+# header
+CacheControl:
+  $ref: "./header/cache-control.yaml"
+
+# cookie

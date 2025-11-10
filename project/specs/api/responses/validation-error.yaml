@@ -1,0 +1,18 @@
+description: Invalid request parameters or body
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/error.yaml"
+    examples:
+      invalidCategory:
+        summary: Invalid category parameter
+        value:
+          error: "Invalid category"
+          message: "Category must be one of: Repair, Refill, Recycling, Donate"
+          code: "INVALID_CATEGORY"
+      missingParameter:
+        summary: Missing required parameter
+        value:
+          error: "Missing parameter"
+          message: "Required parameter 'category' is missing"
+          code: "MISSING_PARAMETER"

@@ -41,7 +41,7 @@ Are you building a new application or MVP?
 
 ## 📚 Complete Guides
 
-### [Faux-SQL DynamoDB Modeling](faux-sql-dynamodb-modeling.md)
+### [Faux-SQL Design](faux-sql-design.md)
 
 **Best for:** New applications, MVPs, teams learning DynamoDB
 
@@ -66,7 +66,9 @@ Are you building a new application or MVP?
 - Using GraphQL
 - Traffic < 10K requests/sec
 
-**Guide includes:** Complete process from ERD to implementation, relationship patterns, migration strategies
+**Guide includes:** Complete data modeling workflow (10 steps), relationship patterns, migration strategies, complete examples
+
+**Implementation:** See [Backend Implementation](../design-principles/design-and-development-methodology-v2.md#55131-faux-sql-implementation-approach) in the Design & Development Methodology guide
 
 ---
 
@@ -94,17 +96,20 @@ Are you building a new application or MVP?
 - Cost optimization critical
 - Access patterns are stable
 
-**Guide includes:** 3 phases (11 steps), advanced topics, migration strategies, complete examples
+**Guide includes:** Complete data modeling workflow (10 steps), advanced topics, migration strategies, complete examples
+
+**Implementation:** See [Backend Implementation](../design-principles/design-and-development-methodology-v2.md#55132-single-table-implementation-approach) in the Design & Development Methodology guide
 
 ---
 
 ## 📊 Approach Comparison
 
-| Factor                | Faux-SQL                          | Single-Table                  |
-| --------------------- | --------------------------------- | ----------------------------- |
-| **Tables**            | Multiple (one per entity)         | Single table for all entities |
-| **Key Names**         | Descriptive (CustomerId, OrderId) | Generic (PK, SK, GSI1PK)      |
-| **Learning Curve**    | Easy (familiar SQL patterns)      | Steep (DynamoDB-specific)     |
+| Factor                | Faux-SQL                                                 | Single-Table                  |
+| --------------------- | -------------------------------------------------------- | ----------------------------- |
+| **Tables**            | Multiple (one per entity)                                | Single table for all entities |
+| **Key Names**         | Hybrid: Descriptive PKs (OrderId), Generic GSIs (GSI1PK) | Generic (PK, SK, GSI1PK)      |
+| **GSI Strategy**      | 1-2 GSIs per table, reusable for related patterns        | Overloaded GSIs across entities |
+| **Learning Curve**    | Easy (familiar SQL patterns)                             | Steep (DynamoDB-specific)     |
 | **Development Speed** | Fast (iterate quickly)            | Slower (requires planning)    |
 | **Performance**       | 50-100ms typical                  | Sub-10ms possible             |
 | **Flexibility**       | High (easy to change)             | Low (migrations complex)      |
@@ -161,12 +166,12 @@ Both guides include detailed migration strategies.
 
 ### Primary Resources
 
-- **[Faux-SQL Guide](faux-sql-dynamodb-modeling.md)** - Complete guide for Faux-SQL approach
+- **[Faux-SQL Guide](faux-sql-design.md)** - Complete guide for Faux-SQL approach
 - **[Single-Table Guide](single-table-design.md)** - Complete guide for single-table design
 
 ### External Resources
 
-- _The DynamoDB Book_ by Alex DeBrie - Essential reading (primary reference for these guides, particularly the single-table design approach)
+- **The DynamoDB Book** by Alex DeBrie - Essential reading (primary reference for these guides, particularly the single-table design approach)
 - [AWS DynamoDB Developer Guide](https://docs.aws.amazon.com/dynamodb/) - Official documentation
 - [NoSQL Workbench](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/workbench.html) - Visual modeling tool
 - [Best Practices](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html) - AWS recommendations
@@ -204,7 +209,7 @@ A: Yes! AWS NoSQL Workbench is great for visualizing and testing your data model
 2. **Start simple** - Faux-SQL is great for MVPs and learning
 3. **Optimize when needed** - Migrate to Single-Table when scale demands it
 4. **Plan before coding** - 90% of DynamoDB work happens in design
-5. **Both approaches are valid** - Endorsed by The DynamoDB Book for different use cases
+5. **Both approaches are valid** - Endorsed by _The DynamoDB Book_ for different use cases
 
 ---
 

@@ -1,0 +1,551 @@
+# SMW Story Map
+
+- 👤 User: Content Creator / Editorial Team
+
+  - 🎯 Goal: Publish educational content
+    - 📝 Epic: Write and publish blog posts about recycling
+      - 📄 Story: Create new blog post draft
+      - 📄 Story: Add images to blog post
+      - 📄 Story: Preview blog post before publishing
+      - 📄 Story: Publish blog post to live site
+      - 📄 Story: Edit published blog post
+    - 📝 Epic: Share news about sustainability initiatives
+      - 📄 Story: Create news article
+      - 📄 Story: Tag news article by topic
+      - 📄 Story: Schedule news article for future publication
+    - 📝 Epic: Upload video tutorials on waste reduction
+      - 📄 Story: Upload video file
+      - 📄 Story: Add video title and description
+      - 📄 Story: Generate video thumbnail
+      - 📄 Story: Embed video in content page
+    - 📝 Epic: Update knowledge base articles on material recycling
+      - 📄 Story: Search existing knowledge base articles
+      - 📄 Story: Edit article content
+      - 📄 Story: Track article revision history
+      - 📄 Story: Mark article as reviewed/updated
+
+- 👤 User: Consumer / End User
+
+  - 🎯 Goal: Discover and access circular economy services
+    - 📝 Epic: Access home page and explore options
+      - 📄 Story: View hero section with value proposition `[003]`
+      - 📄 Story: See category cards for quick navigation `[003]`
+      - 📄 Story: Access search interface on home page `[003]`
+      - 📄 Story: View featured/trending providers `[003]`
+      - 📄 Story: Navigate to About and How It Works sections `[003]`
+  - 🎯 Goal: Find circular service providers nearby
+    - 📝 Epic: Browse providers by waste category
+      - 📄 Story: Display category taxonomy on home page `[001]`
+      - 📄 Story: Select primary waste category `[001]`
+      - 📄 Story: Filter by waste type within category `[001]`
+      - 📄 Story: Filter by specific product `[001]`
+      - 📄 Story: Set distance radius for search `[001]`
+      - 📄 Story: View filtered results list `[001]`
+    - 📝 Epic: View results on interactive map with clustering
+      - 📄 Story: Display providers as map markers
+      - 📄 Story: Cluster nearby markers at zoom levels
+      - 📄 Story: Expand cluster on click
+      - 📄 Story: Show provider preview on marker click
+      - 📄 Story: Sync map view with list results
+    - 📝 Epic: Navigate to provider using Google Maps/Waze
+      - 📄 Story: Display navigation button on listing
+      - 📄 Story: Detect user's current location
+      - 📄 Story: Launch Google Maps with directions
+      - 📄 Story: Launch Waze with directions
+  - 🎯 Goal: Evaluate and choose a provider
+    - 📝 Epic: View detailed business information
+      - 📄 Story: Display business name and description `[002]`
+      - 📄 Story: Show operating hours `[002]`
+      - 📄 Story: Display contact details (phone, email, website) `[002]`
+      - 📄 Story: Show physical address `[002]`
+    - 📝 Epic: Browse photos and media of the facility
+      - 📄 Story: Display photo gallery
+      - 📄 Story: View full-size images in lightbox
+      - 📄 Story: Play embedded videos
+    - 📝 Epic: Read accepted materials list
+      - 📄 Story: Display categorized materials list
+      - 📄 Story: Show material-specific handling notes
+      - 📄 Story: Indicate seasonal availability
+    - 📝 Epic: Click call-to-action links to engage
+      - 📄 Story: Display primary CTA button
+      - 📄 Story: Handle click-to-call on mobile
+      - 📄 Story: Open website in new tab
+      - 📄 Story: Compose email with pre-filled subject
+    - 📝 Epic: Read reviews and ratings from other users
+      - 📄 Story: Display average rating score
+      - 📄 Story: Show review count
+      - 📄 Story: List individual reviews with timestamps
+      - 📄 Story: Sort reviews by date or rating
+      - 📄 Story: Flag inappropriate reviews
+    - 📝 Epic: Compare provider options side-by-side
+      - 📄 Story: Select providers for comparison
+      - 📄 Story: Display comparison table
+      - 📄 Story: Highlight key differences
+      - 📄 Story: Remove providers from comparison
+  - 🎯 Goal: Share and learn from community experiences
+    - 📝 Epic: Review and rate merchants
+      - 📄 Story: Write a review for a merchant `[004]`
+      - 📄 Story: Rate merchant with star rating `[004]`
+      - 📄 Story: Upload photos with review `[004]`
+      - 📄 Story: Edit my own review `[004]`
+      - 📄 Story: Delete my own review `[004]`
+  - 🎯 Goal: Manage personal preferences
+    - 📝 Epic: Create account and sign in
+      - 📄 Story: Register with email and password
+      - 📄 Story: Sign in with existing credentials
+      - 📄 Story: Reset forgotten password
+      - 📄 Story: Verify email address
+      - 📄 Story: Sign out
+    - 📝 Epic: Save favorite providers for quick access
+      - 📄 Story: Add provider to favorites
+      - 📄 Story: View favorites list
+      - 📄 Story: Remove provider from favorites
+      - 📄 Story: Organize favorites into collections
+    - 📝 Epic: View activity history
+      - 📄 Story: Display recent searches
+      - 📄 Story: Show viewed listings
+      - 📄 Story: Track clicked directions
+      - 📄 Story: Clear activity history
+    - 📝 Epic: Save common filter combinations
+      - 📄 Story: Save current search filters
+      - 📄 Story: Name saved search
+      - 📄 Story: Load saved search
+      - 📄 Story: Delete saved search
+    - 📝 Epic: Set up search notifications
+      - 📄 Story: Enable notifications for saved search
+      - 📄 Story: Set notification frequency
+      - 📄 Story: Receive notification when new providers match
+      - 📄 Story: Disable notifications
+  - 🎯 Goal: Refine search results
+    - 📝 Epic: Drill down into sub-categories
+      - 📄 Story: Display sub-category options
+      - 📄 Story: Select sub-category filter
+      - 📄 Story: Show breadcrumb navigation
+      - 📄 Story: Clear sub-category filter
+    - 📝 Epic: Toggle availability filters
+      - 📄 Story: Filter by currently open providers
+      - 📄 Story: Filter by accepts drop-offs
+      - 📄 Story: Filter by offers pickup service
+      - 📄 Story: Show filter applied indicators
+    - 📝 Epic: Sort results by relevance or distance
+      - 📄 Story: Sort by distance (nearest first)
+      - 📄 Story: Sort by rating (highest first)
+      - 📄 Story: Sort by recently added
+      - 📄 Story: Display current sort order
+    - 📝 Epic: Apply multiple filters simultaneously
+      - 📄 Story: Show active filters summary
+      - 📄 Story: Remove individual filters
+      - 📄 Story: Clear all filters
+      - 📄 Story: Update results dynamically as filters change
+  - 🎯 Goal: Learn how to recycle properly
+    - 📝 Epic: Search for recycling guidance by material
+      - 📄 Story: Enter material name in search
+      - 📄 Story: Display knowledge base article
+      - 📄 Story: Show related materials
+      - 📄 Story: Navigate between articles
+    - 📝 Epic: Discover matching providers for specific items
+      - 📄 Story: Link article to provider search
+      - 📄 Story: Pre-fill search with material category
+      - 📄 Story: Display providers accepting the material
+    - 📝 Epic: Access step-by-step recycling instructions
+      - 📄 Story: Display preparation steps
+      - 📄 Story: Show what to avoid
+      - 📄 Story: Provide visual guides with images
+      - 📄 Story: Link to video tutorials
+  - 🎯 Goal: Use app offline and on-the-go
+    - 📝 Epic: Install PWA on mobile device
+      - 📄 Story: Display install prompt on supported browsers
+      - 📄 Story: Add to home screen
+      - 📄 Story: Show app splash screen
+      - 📄 Story: Open as standalone app
+    - 📝 Epic: Access key pages without internet
+      - 📄 Story: Cache home page for offline use
+      - 📄 Story: Cache saved favorites
+      - 📄 Story: Cache recent search results
+      - 📄 Story: Display offline indicator
+    - 📝 Epic: Receive install prompts
+      - 📄 Story: Detect PWA eligibility
+      - 📄 Story: Show custom install banner
+      - 📄 Story: Dismiss install prompt
+      - 📄 Story: Don't show prompt again if dismissed
+  - 🎯 Goal: Discover broader sustainable options
+    - 📝 Epic: Browse green cafes and restaurants
+      - 📄 Story: View cafe category listings
+      - 📄 Story: Filter by sustainable practices (composting, reusables)
+      - 📄 Story: Show menu highlights
+    - 📝 Epic: Find sustainable retailers
+      - 📄 Story: Search by product type
+      - 📄 Story: Filter by eco-certifications
+      - 📄 Story: Display store specialties
+    - 📝 Epic: Locate farmers markets
+      - 📄 Story: View market schedule
+      - 📄 Story: Show vendor types
+      - 📄 Story: Display seasonal availability
+    - 📝 Epic: Search second-hand stores
+      - 📄 Story: Browse by item category
+      - 📄 Story: Filter by condition
+      - 📄 Story: Show donation acceptance info
+  - 🎯 Goal: Participate in community
+    - 📝 Epic: Discover and attend green events
+      - 📄 Story: View upcoming events calendar
+      - 📄 Story: Filter events by type
+      - 📄 Story: View event details
+      - 📄 Story: RSVP to event
+      - 📄 Story: Add event to personal calendar
+    - 📝 Epic: Join workshops on sustainability
+      - 📄 Story: Browse workshop catalog
+      - 📄 Story: Register for workshop
+      - 📄 Story: Receive workshop reminders
+      - 📄 Story: Access workshop materials
+    - 📝 Epic: Share tips in chat groups
+      - 📄 Story: Join interest-based group
+      - 📄 Story: Post message to group
+      - 📄 Story: React to messages
+      - 📄 Story: Reply to threads
+      - 📄 Story: Share photos in chat
+    - 📝 Epic: Organize local circular economy actions
+      - 📄 Story: Create community action
+      - 📄 Story: Invite participants
+      - 📄 Story: Coordinate meeting location
+      - 📄 Story: Track action completion
+  - 🎯 Goal: Earn recognition for sustainable actions
+    - 📝 Epic: Collect badges for activities
+      - 📄 Story: Track user actions
+      - 📄 Story: Award badge on milestone
+      - 📄 Story: Display badge collection
+      - 📄 Story: Share badge on social media
+    - 📝 Epic: Earn rewards for participation
+      - 📄 Story: Accumulate points for activities
+      - 📄 Story: View points balance
+      - 📄 Story: Browse rewards catalog
+      - 📄 Story: Track points expiration
+    - 📝 Epic: Redeem incentives from partners
+      - 📄 Story: Select reward to redeem
+      - 📄 Story: Generate redemption code
+      - 📄 Story: View active redemption codes
+      - 📄 Story: Mark reward as used
+  - 🎯 Goal: Plan efficient circular errands
+    - 📝 Epic: Build multi-stop routes
+      - 📄 Story: Add providers to route
+      - 📄 Story: Reorder stops
+      - 📄 Story: Optimize route for shortest distance
+      - 📄 Story: View total route time and distance
+      - 📄 Story: Export route to navigation app
+    - 📝 Epic: Get cross-category recommendations
+      - 📄 Story: Analyze current route stops
+      - 📄 Story: Suggest nearby complementary services
+      - 📄 Story: Display recommendation reasoning
+      - 📄 Story: Add recommendation to route
+    - 📝 Epic: Receive AI-powered suggestions
+      - 📄 Story: Input items to dispose/recycle
+      - 📄 Story: Get smart provider recommendations
+      - 📄 Story: Show alternative disposal methods
+      - 📄 Story: Explain environmental impact of choices
+  - 🎯 Goal: Access temporary use items
+    - 📝 Epic: Search rental inventory (tools, furniture, equipment)
+      - 📄 Story: Browse rental categories
+      - 📄 Story: Search by item name
+      - 📄 Story: Filter by availability dates
+      - 📄 Story: View item details and pricing
+    - 📝 Epic: Reserve and book rentals
+      - 📄 Story: Select rental dates
+      - 📄 Story: Add item to rental cart
+      - 📄 Story: Complete booking checkout
+      - 📄 Story: Receive booking confirmation
+      - 📄 Story: View active rentals
+    - 📝 Epic: Return items after use
+      - 📄 Story: Schedule return time
+      - 📄 Story: Get return location directions
+      - 📄 Story: Complete return check-in
+      - 📄 Story: Receive return receipt
+  - 🎯 Goal: Reduce single-use consumption
+    - 📝 Epic: Find water refill stations nearby
+      - 📄 Story: Search refill stations by location
+      - 📄 Story: Filter by accessibility
+      - 📄 Story: View station operating hours
+      - 📄 Story: Report station issues
+    - 📝 Epic: Sign up for recurring refill services
+      - 📄 Story: Browse subscription plans
+      - 📄 Story: Select delivery frequency
+      - 📄 Story: Choose refill products
+      - 📄 Story: Manage subscription
+      - 📄 Story: Pause or cancel subscription
+    - 📝 Epic: Join product take-back programs
+      - 📄 Story: View available take-back programs
+      - 📄 Story: Check product eligibility
+      - 📄 Story: Schedule pickup
+      - 📄 Story: Track pickup status
+  - 🎯 Goal: Track environmental impact
+    - 📝 Epic: Log sustainable activities
+      - 📄 Story: Record recycling action
+      - 📄 Story: Log reuse activity
+      - 📄 Story: Track refill usage
+      - 📄 Story: Note participation in events
+    - 📝 Epic: View estimated carbon savings
+      - 📄 Story: Display carbon impact dashboard
+      - 📄 Story: Show breakdown by activity type
+      - 📄 Story: Compare to baseline metrics
+      - 📄 Story: View carbon equivalents (trees, cars)
+    - 📝 Epic: Monitor progress over time
+      - 📄 Story: View monthly impact trends
+      - 📄 Story: Set personal goals
+      - 📄 Story: Track goal completion
+      - 📄 Story: Celebrate milestones
+  - 🎯 Goal: Contribute to directory growth
+    - 📝 Epic: Suggest new providers for listing
+      - 📄 Story: Submit provider suggestion form
+      - 📄 Story: Provide business details
+      - 📄 Story: Upload supporting photos
+      - 📄 Story: Receive submission confirmation
+      - 📄 Story: Track suggestion review status
+    - 📝 Epic: Submit corrections to existing listings
+      - 📄 Story: Report incorrect information
+      - 📄 Story: Suggest updated details
+      - 📄 Story: Provide verification evidence
+      - 📄 Story: Receive correction acknowledgment
+
+- 👤 User: Service Provider / Merchant
+
+  - 🎯 Goal: Get listed in directory
+    - 📝 Epic: Create business profile
+      - 📄 Story: Register merchant account
+      - 📄 Story: Verify business email
+      - 📄 Story: Enter basic business information
+      - 📄 Story: Set business location on map
+    - 📝 Epic: Upload business information and media
+      - 📄 Story: Write business description
+      - 📄 Story: Add operating hours
+      - 📄 Story: Upload business photos
+      - 📄 Story: Add logo image
+      - 📄 Story: Upload videos
+      - 📄 Story: Set contact information
+    - 📝 Epic: Select relevant categories and waste types
+      - 📄 Story: Choose primary category
+      - 📄 Story: Select additional categories
+      - 📄 Story: Specify accepted waste types
+      - 📄 Story: Indicate accepted materials
+      - 📄 Story: Add product/service tags
+    - 📝 Epic: Submit listing for review
+      - 📄 Story: Preview listing before submission
+      - 📄 Story: Submit for approval
+      - 📄 Story: Receive submission confirmation
+      - 📄 Story: Track review status
+      - 📄 Story: Respond to review feedback
+    - 📝 Epic: Edit and update listing details
+      - 📄 Story: Access listing dashboard
+      - 📄 Story: Edit business information
+      - 📄 Story: Update photos and media
+      - 📄 Story: Modify operating hours
+      - 📄 Story: Save changes as draft
+      - 📄 Story: Publish updated listing
+  - 🎯 Goal: Increase visibility
+    - 📝 Epic: Purchase tiered subscription packages
+      - 📄 Story: View available subscription tiers
+      - 📄 Story: Compare package features
+      - 📄 Story: Select subscription plan
+      - 📄 Story: Complete payment checkout
+      - 📄 Story: Receive subscription confirmation
+      - 📄 Story: Upgrade/downgrade plan
+    - 📝 Epic: Run banner advertisements
+      - 📄 Story: Access ad campaign manager
+      - 📄 Story: Upload banner creative
+      - 📄 Story: Set campaign budget
+      - 📄 Story: Choose target audience
+      - 📄 Story: Schedule campaign dates
+      - 📄 Story: Launch campaign
+      - 📄 Story: Pause/resume campaign
+    - 📝 Epic: Buy premium placements
+      - 📄 Story: View placement options
+      - 📄 Story: Select placement position
+      - 📄 Story: Set placement duration
+      - 📄 Story: Complete placement purchase
+      - 📄 Story: Monitor placement performance
+    - 📝 Epic: Highlight listings during campaigns
+      - 📄 Story: Enable featured listing badge
+      - 📄 Story: Set highlight duration
+      - 📄 Story: Choose highlight appearance
+      - 📄 Story: Track highlight impressions
+    - 📝 Epic: Use pay-per-click promotions
+      - 📄 Story: Set PPC budget
+      - 📄 Story: Define click cost limits
+      - 📄 Story: Choose promotion keywords
+      - 📄 Story: Track click-through rate
+      - 📄 Story: Adjust bidding strategy
+  - 🎯 Goal: Understand customer engagement
+    - 📝 Epic: View traffic analytics dashboard
+      - 📄 Story: Display visitor count metrics
+      - 📄 Story: Show unique visitors vs returning
+      - 📄 Story: View traffic sources
+      - 📄 Story: Display geographic distribution
+    - 📝 Epic: Track listing views and clicks
+      - 📄 Story: Show profile view count
+      - 📄 Story: Display detail page clicks
+      - 📄 Story: Track phone number clicks
+      - 📄 Story: Monitor website link clicks
+      - 📄 Story: Count direction requests
+    - 📝 Epic: Measure conversion rates
+      - 📄 Story: Calculate view-to-contact ratio
+      - 📄 Story: Track engagement funnel
+      - 📄 Story: Show conversion trends over time
+      - 📄 Story: Compare against category averages
+    - 📝 Epic: Calculate ROI on promotions
+      - 📄 Story: Display ad spend summary
+      - 📄 Story: Show cost per engagement
+      - 📄 Story: Calculate cost per acquisition
+      - 📄 Story: Generate ROI reports
+      - 📄 Story: Export analytics data
+  - 🎯 Goal: Offer circular business models
+    - 📝 Epic: List rental services in marketplace
+      - 📄 Story: Add rental item to inventory
+      - 📄 Story: Set rental pricing
+      - 📄 Story: Define rental terms
+      - 📄 Story: Manage item availability calendar
+      - 📄 Story: Process rental bookings
+      - 📄 Story: Handle rental returns
+    - 📝 Epic: Set up subscription offerings
+      - 📄 Story: Create subscription product
+      - 📄 Story: Set subscription tiers
+      - 📄 Story: Define delivery schedules
+      - 📄 Story: Manage subscriber list
+      - 📄 Story: Process recurring payments
+      - 📄 Story: Handle subscription changes
+    - 📝 Epic: Enable refill service bookings
+      - 📄 Story: List refill services
+      - 📄 Story: Set refill pricing
+      - 📄 Story: Accept booking requests
+      - 📄 Story: Schedule service appointments
+      - 📄 Story: Complete service check-ins
+      - 📄 Story: Track refill volumes
+
+- 👤 User: Platform Administrator / Operations Staff
+  - 🎯 Goal: Maintain directory quality
+    - 📝 Epic: Review submitted listings
+      - 📄 Story: View pending listings queue
+      - 📄 Story: Review business details
+      - 📄 Story: Verify contact information
+      - 📄 Story: Check media quality
+      - 📄 Story: Validate category selections
+    - 📝 Epic: Approve or reject new merchants
+      - 📄 Story: Approve compliant listing
+      - 📄 Story: Reject non-compliant listing
+      - 📄 Story: Request additional information
+      - 📄 Story: Send approval notification
+      - 📄 Story: Send rejection with reason
+    - 📝 Epic: Verify edited listing changes
+      - 📄 Story: View edited listings queue
+      - 📄 Story: Compare before/after changes
+      - 📄 Story: Approve edits
+      - 📄 Story: Reject inappropriate changes
+      - 📄 Story: Notify merchant of decision
+    - 📝 Epic: Define circular-economy qualification criteria
+      - 📄 Story: Document qualification standards
+      - 📄 Story: Create verification checklist
+      - 📄 Story: Publish criteria guidelines
+      - 📄 Story: Update criteria based on feedback
+    - 📝 Epic: Enforce compliance benchmarks
+      - 📄 Story: Audit existing listings
+      - 📄 Story: Flag non-compliant merchants
+      - 📄 Story: Request compliance updates
+      - 📄 Story: Suspend non-responsive listings
+      - 📄 Story: Reinstate compliant listings
+    - 📝 Epic: Monitor auto-approved listings
+      - 📄 Story: Review recently auto-approved listings
+      - 📄 Story: Spot check for quality issues
+      - 📄 Story: Flag problematic listings
+      - 📄 Story: Implement retroactive review
+      - 📄 Story: Adjust auto-approval rules
+  - 🎯 Goal: Launch with baseline coverage
+    - 📝 Epic: Import data from curated datasets
+      - 📄 Story: Map dataset fields to platform schema
+      - 📄 Story: Upload CSV/JSON files
+      - 📄 Story: Preview import results
+      - 📄 Story: Execute bulk import
+      - 📄 Story: Log import results and errors
+    - 📝 Epic: Seed directory with initial providers
+      - 📄 Story: Identify target coverage areas
+      - 📄 Story: Source provider data
+      - 📄 Story: Create seed listings
+      - 📄 Story: Verify seed listing accuracy
+      - 📄 Story: Publish seed listings
+    - 📝 Epic: Validate data quality
+      - 📄 Story: Check for duplicate entries
+      - 📄 Story: Verify address accuracy
+      - 📄 Story: Validate contact information
+      - 📄 Story: Test geocoding coordinates
+      - 📄 Story: Fix data quality issues
+  - 🎯 Goal: Measure platform performance
+    - 📝 Epic: Track search queries and patterns
+      - 📄 Story: Log all search queries
+      - 📄 Story: Analyze popular search terms
+      - 📄 Story: Identify search gaps
+      - 📄 Story: Track zero-result searches
+      - 📄 Story: Generate search insights report
+    - 📝 Epic: Monitor listing views
+      - 📄 Story: Track listing impression counts
+      - 📄 Story: Calculate view distribution
+      - 📄 Story: Identify top-performing listings
+      - 📄 Story: Detect low-visibility listings
+      - 📄 Story: Generate visibility reports
+    - 📝 Epic: Measure conversion metrics
+      - 📄 Story: Track user engagement actions
+      - 📄 Story: Calculate search-to-click ratio
+      - 📄 Story: Measure click-to-contact ratio
+      - 📄 Story: Monitor bounce rates
+      - 📄 Story: Analyze conversion funnels
+    - 📝 Epic: Generate reports for partners
+      - 📄 Story: Create partner dashboard
+      - 📄 Story: Schedule automated reports
+      - 📄 Story: Customize report metrics
+      - 📄 Story: Export report data
+      - 📄 Story: Share reports with stakeholders
+    - 📝 Epic: Aggregate carbon-tracking data
+      - 📄 Story: Collect user activity data
+      - 📄 Story: Calculate carbon impact per activity
+      - 📄 Story: Sum total platform impact
+      - 📄 Story: Segment impact by category
+      - 📄 Story: Validate impact calculations
+    - 📝 Epic: Publish impact metrics to stakeholders
+      - 📄 Story: Create impact dashboard
+      - 📄 Story: Generate quarterly impact reports
+      - 📄 Story: Visualize impact trends
+      - 📄 Story: Share metrics publicly
+      - 📄 Story: Provide downloadable impact data
+  - 🎯 Goal: Manage incentive programs
+    - 📝 Epic: Configure reward catalogues
+      - 📄 Story: Add reward items
+      - 📄 Story: Set reward point costs
+      - 📄 Story: Upload reward images
+      - 📄 Story: Define redemption rules
+      - 📄 Story: Set reward inventory limits
+      - 📄 Story: Expire outdated rewards
+    - 📝 Epic: Set up partnership deals
+      - 📄 Story: Onboard partner businesses
+      - 📄 Story: Negotiate reward offerings
+      - 📄 Story: Configure partner redemption
+      - 📄 Story: Track partner participation
+      - 📄 Story: Manage partner agreements
+    - 📝 Epic: Adjust loyalty incentives
+      - 📄 Story: Modify point earning rules
+      - 📄 Story: Create bonus point campaigns
+      - 📄 Story: Set point expiration policies
+      - 📄 Story: Balance reward economy
+      - 📄 Story: Analyze incentive effectiveness
+  - 🎯 Goal: Foster safe community engagement
+    - 📝 Epic: Moderate chat and group discussions
+      - 📄 Story: Review flagged messages
+      - 📄 Story: Remove inappropriate content
+      - 📄 Story: Warn users for violations
+      - 📄 Story: Ban abusive users
+      - 📄 Story: Restore falsely flagged content
+    - 📝 Epic: Review flagged content
+      - 📄 Story: View moderation queue
+      - 📄 Story: Assess content severity
+      - 📄 Story: Take moderation action
+      - 📄 Story: Notify content reporter
+      - 📄 Story: Document moderation decisions
+    - 📝 Epic: Enforce community guidelines
+      - 📄 Story: Publish community guidelines
+      - 📄 Story: Update guidelines based on issues
+      - 📄 Story: Communicate policy changes
+      - 📄 Story: Apply warnings and suspensions
+      - 📄 Story: Handle appeals process

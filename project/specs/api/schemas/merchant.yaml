@@ -1,0 +1,203 @@
+type: object
+description: Merchant entity representing a circular-economy service provider
+required:
+  - merchantId
+  - legalName
+  - primaryCategory
+  - verificationStatus
+  - location
+  - contact
+  - rating
+  - createdAt
+  - updatedAt
+properties:
+  merchantId:
+    type: string
+    format: uuid
+    description: Unique identifier for the merchant
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  
+  legalName:
+    type: string
+    description: Official registered business name
+    minLength: 1
+    maxLength: 200
+    example: "Green Repair Shop Inc."
+  
+  tradingName:
+    type: string
+    description: Display name (if different from legal name)
+    maxLength: 200
+    example: "Green Repair"
+    nullable: true
+  
+  shortDescription:
+    type: string
+    description: Brief description for search results
+    maxLength: 200
+    example: "Expert electronics and appliance repair services"
+  
+  primaryCategory:
+    type: string
+    enum: [Repair, Refill, Recycling, Donate]
+    description: Primary service category
+    example: "Repair"
+  
+  categories:
+    type: array
+    description: All categories this merchant operates in (max 4)
+    maxItems: 4
+    items:
+      type: string
+      enum: [Repair, Refill, Recycling, Donate]
+    example: ["Repair", "Recycling"]
+  
+  verificationStatus:
+    type: string
+    enum: [Pending, Verified, Rejected]
+    description: Merchant verification status
+    example: "Verified"
+  
+  location:
+    type: object
+    description: Physical location of the merchant
+    required:
+      - address
+      - city
+      - state
+      - postalCode
+      - latitude
+      - longitude
+    properties:
+      address:
+        type: string
+        description: Street address
+        example: "123 Main Street"
+      city:
+        type: string
+        description: City name
+        example: "Toronto"
+      state:
+        type: string
+        description: State/Province code
+        example: "ON"
+      postalCode:
+        type: string
+        description: Postal/ZIP code
+        example: "M5V 1A1"
+      latitude:
+        type: number
+        format: double
+        description: GPS latitude coordinate
+        minimum: -90
+        maximum: 90
+        example: 43.6532
+      longitude:
+        type: number
+        format: double
+        description: GPS longitude coordinate
+        minimum: -180
+        maximum: 180
+        example: -79.3832
+  
+  contact:
+    type: object
+    description: Contact information
+    required:
+      - phoneNumber
+      - email
+    properties:
+      phoneNumber:
+        type: string
+        description: Primary contact phone number
+        pattern: '^\+?[1-9]\d{1,14}$'
+        example: "+1-416-555-0123"
+      email:
+        type: string
+        format: email
+        description: Primary contact email
+        example: "contact@greenrepair.com"
+      websiteUrl:
+        type: string
+        format: uri
+        description: Business website URL
+        example: "https://greenrepair.com"
+        nullable: true
+  
+  rating:
+    type: object
+    description: Aggregated rating metrics (denormalized from reviews)
+    required:
+      - average
+      - count
+    properties:
+      average:
+        type: number
+        format: float
+        description: Average rating (0-5)
+        minimum: 0
+        maximum: 5
+        example: 4.5
+      count:
+        type: integer
+        description: Total number of reviews
+        minimum: 0
+        example: 127
+  
+  services:
+    type: array
+    description: List of specific services offered (max 10)
+    maxItems: 10
+    items:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Service name
+          example: "Electronics Repair"
+        description:
+          type: string
+          description: Service description
+          example: "Smartphones, laptops, tablets"
+    nullable: true
+  
+  operatingHours:
+    type: array
+    description: Weekly operating schedule (max 7 days)
+    maxItems: 7
+    items:
+      type: object
+      required:
+        - dayOfWeek
+        - openTime
+        - closeTime
+      properties:
+        dayOfWeek:
+          type: string
+          enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+          description: Day of the week
+        openTime:
+          type: string
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          description: Opening time (HH:MM format, 24-hour)
+          example: "09:00"
+        closeTime:
+          type: string
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          description: Closing time (HH:MM format, 24-hour)
+          example: "17:00"
+    nullable: true
+  
+  createdAt:
+    type: string
+    format: date-time
+    description: Merchant registration timestamp (ISO 8601)
+    example: "2024-01-15T10:30:00Z"
+  
+  updatedAt:
+    type: string
+    format: date-time
+    description: Last modification timestamp (ISO 8601)
+    example: "2024-10-28T14:22:00Z"

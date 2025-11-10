@@ -1,0 +1,121 @@
+get:
+  operationId: searchMerchantsByCategory
+  tags:
+    - merchants
+  summary: Search merchants by category
+  description: |
+    Retrieves all merchants that offer services in the specified category.
+    Returns complete merchant data including location coordinates for client-side distance calculations.
+
+    **Story**: 001 - Browse Providers by Waste Category
+
+    **Architecture Notes**:
+    - Returns ALL merchants in the category (no pagination in MVP)
+    - Client performs distance calculation and filtering
+    - Response is cacheable (same for all users)
+
+  parameters:
+    - $ref: "../../parameters/query/category.yaml"
+
+  responses:
+    "200":
+      description: Successful response with list of merchants
+      headers:
+        Cache-Control:
+          description: Caching directive
+          schema:
+            type: string
+            example: "public, max-age=300"
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - merchants
+              - count
+              - category
+            properties:
+              merchants:
+                type: array
+                description: Array of merchant objects matching the category
+                items:
+                  $ref: "../../schemas/merchant.yaml"
+              count:
+                type: integer
+                description: Total number of merchants returned
+                example: 42
+              category:
+                type: string
+                description: The category that was queried
+                example: "Repair"
+          examples:
+            repairShops:
+              summary: Search for repair shops
+              value:
+                merchants:
+                  - merchantId: "550e8400-e29b-41d4-a716-446655440000"
+                    legalName: "Green Repair Shop Inc."
+                    tradingName: "Green Repair"
+                    shortDescription: "Expert electronics and appliance repair"
+                    primaryCategory: "Repair"
+                    categories: ["Repair", "Recycling"]
+                    verificationStatus: "Verified"
+                    location:
+                      address: "123 Main Street"
+                      city: "Toronto"
+                      state: "ON"
+                      postalCode: "M5V 1A1"
+                      latitude: 43.6532
+                      longitude: -79.3832
+                    contact:
+                      phoneNumber: "+1-416-555-0123"
+                      email: "contact@greenrepair.com"
+                      websiteUrl: "https://greenrepair.com"
+                    rating:
+                      average: 4.5
+                      count: 127
+                    services:
+                      - name: "Electronics Repair"
+                        description: "Smartphones, laptops, tablets"
+                    operatingHours:
+                      - dayOfWeek: "Monday"
+                        openTime: "09:00"
+                        closeTime: "17:00"
+                    createdAt: "2024-01-15T10:30:00Z"
+                    updatedAt: "2024-10-28T14:22:00Z"
+                count: 1
+                category: "Repair"
+            emptyResults:
+              summary: No merchants found in category
+              value:
+                merchants: []
+                count: 0
+                category: "Donate"
+
+    "400":
+      $ref: "../../responses/validation-error.yaml"
+
+    "500":
+      $ref: "../../responses/internal-server-error.yaml"
+
+  x-cache-strategy:
+    description: Caching configuration for this endpoint
+    bff:
+      enabled: true
+      ttl: 300
+      key: "merchants:search:${category}"
+    cdn:
+      enabled: true
+      ttl: 300
+
+  x-performance-targets:
+    backend: 100
+    bff: 150
+    total: 200
+
+  x-database-query:
+    description: DynamoDB query structure
+    table: Merchants
+    operation: Query
+    index: GSI1
+    keyCondition: "GSI1PK = :category"

@@ -69,15 +69,15 @@ The Review entity represents customer feedback and ratings for merchants. Review
 
 ### Implemented Patterns (Current)
 
-| Pattern                          | API Call   | Index/Table   | Keys Used                          | Notes                        |
-| -------------------------------- | ---------- | ------------- | ---------------------------------- | ---------------------------- |
-| Get review by ID                 | GetItem    | Main Table    | ReviewId                           | Rare, mostly via merchant    |
-| Get reviews for merchant         | Query      | MerchantIndex | MerchantId                         | All reviews                  |
-| Get recent reviews for merchant  | Query      | MerchantIndex | MerchantId, Limit = 10             | Latest 10 reviews            |
-| Paginate through reviews         | Query      | MerchantIndex | MerchantId + ExclusiveStartKey     | "Load More" button           |
-| Create review                    | PutItem    | Main Table    | ReviewId (new UUID)                | User submits review          |
-| Update review                    | UpdateItem | Main Table    | ReviewId                           | Edit comment/rating          |
-| Delete review                    | DeleteItem | Main Table    | ReviewId                           | Remove review                |
+| Access Pattern                  | Table/Index   | Parameters                     | Notes                                      |
+| ------------------------------- | ------------- | ------------------------------ | ------------------------------------------ |
+| Get review by ID                | Main table    | reviewId                       | GetItem - Rare, mostly via merchant        |
+| Get reviews for merchant        | MerchantIndex | merchantId                     | Query - All reviews                        |
+| Get recent reviews for merchant | MerchantIndex | merchantId, limit=10           | Query - Latest 10 reviews, sorted DESC     |
+| Paginate through reviews        | MerchantIndex | merchantId, exclusiveStartKey  | Query - "Load More" button                 |
+| Create review                   | Main table    | reviewId (new UUID)            | PutItem - User submits review              |
+| Update review                   | Main table    | reviewId                       | UpdateItem - Edit comment/rating           |
+| Delete review                   | Main table    | reviewId                       | DeleteItem - Remove review                 |
 
 ---
 

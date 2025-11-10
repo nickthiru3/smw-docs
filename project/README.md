@@ -28,17 +28,20 @@ docs/project/
 │   │   ├── merchants.md         # Merchant entity (table + GSIs + access patterns)
 │   │   └── reviews.md           # Review entity (table + GSIs + access patterns)
 │   │
-│   └── jobs/                    # Job stories (feature specifications)
-│       └── consumers/
-│           └── search-by-category/
-│               ├── job-card.md
-│               ├── mockups/
-│               └── sequence-diagram.puml
+│   ├── stories/                 # User stories (feature specifications)
+│   │   └── consumers/
+│   │       └── search-by-category/
+│   │           ├── job-card.md
+│   │           ├── mockups/
+│   │           └── sequence-diagram.puml
+│   └── status-board.md          # Project status and progress tracking
 │
 ├── research/                    # Research and discovery artifacts
-│   └── circular-economy-merchant-attributes.md
+│    └── circular-economy-merchant-attributes.md        # Research on circular economy merchant attributes
 │
-└── status-board.md              # Project status and progress tracking
+├── project-brief.pdf            # Project brief document
+│
+└── project-plan.md              # Project plan document
 ```
 
 ---
@@ -51,10 +54,10 @@ docs/project/
 - **Entity-Key Table**: [`specs/entity-key-table.md`](specs/entity-key-table.md) - Quick reference for all entities
 - **Entities Directory**: [`specs/entities/`](specs/entities/) - Detailed entity documentation
 
-### Job Stories
+### User Stories
 
-- **All Jobs**: [`specs/jobs/`](specs/jobs/) - Feature specifications by actor
-- **Search by Category**: [`specs/jobs/consumers/search-by-category/`](specs/jobs/consumers/search-by-category/)
+- **All Stories**: [`specs/stories/`](specs/stories/) - Feature specifications by actor
+- **Search by Category**: [`specs/stories/consumers/search-by-category/`](specs/stories/consumers/search-by-category/)
 
 ### Research
 
@@ -62,7 +65,7 @@ docs/project/
 
 ### Project Management
 
-- **Status Board**: [`status-board.md`](status-board.md) - Current sprint status
+- **Status Board**: [`status-board.md`](specs/status-board.md) - Current sprint status
 - **Actors**: [`specs/actors.md`](specs/actors.md) - User personas
 
 ---
@@ -106,13 +109,13 @@ See: [`../guides/data-modeling/guides/faux-sql-dynamodb-modeling.md`](../guides/
 
 ---
 
-## Workflow: From Job to Implementation
+## Workflow: From Story to Implementation
 
-### Phase 1: Job Story Definition
+### Phase 1: User Story Definition
 
-1. **Create job card**: `specs/jobs/<actor>/<job-name>/job-card.md`
-2. **Define acceptance criteria**: What must be true for job to be complete
-3. **Identify actors**: Who is this job for?
+1. **Create story**: `specs/stories/<actor>/<epic>/story-card-[story number].md`
+2. **Define acceptance criteria**: What must be true for story to be complete
+3. **Identify actors**: Who is this story for?
 
 ### Phase 2: Extended Discovery
 
@@ -161,7 +164,7 @@ See: [`../guides/data-modeling/guides/faux-sql-dynamodb-modeling.md`](../guides/
 - 📋 Add to Favorites (Phase 2)
 - 📋 Merchant Portal (Phase 2)
 
-See [`status-board.md`](status-board.md) for detailed status.
+See [`status-board.md`](/specs/status-board.md) for detailed status.
 
 ---
 

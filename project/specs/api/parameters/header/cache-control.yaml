@@ -1,0 +1,18 @@
+name: Cache-Control
+in: header
+required: false
+description: HTTP caching directive for response caching
+schema:
+  type: string
+  enum:
+    - "public, max-age=300"                          # 5 minutes
+    - "public, max-age=300, stale-while-revalidate=60"  # 5 min + 1 min stale
+    - "public, max-age=3600"                         # 1 hour
+    - "private, no-cache, no-store, must-revalidate" # No caching
+examples:
+  shortCache:
+    value: "public, max-age=300"
+    summary: 5-minute cache for semi-static data
+  noCache:
+    value: "private, no-cache, no-store, must-revalidate"
+    summary: No caching for sensitive data

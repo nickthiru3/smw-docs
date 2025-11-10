@@ -1,0 +1,4 @@
+Merchant:
+  $ref: "./merchant.yaml"
+Error:
+  $ref: "./error.yaml"

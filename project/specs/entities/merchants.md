@@ -15,6 +15,27 @@ The Merchant entity represents circular-economy service providers (repair shops,
 
 ---
 
+## Access Patterns
+
+| Access Pattern               | Table/Index | Parameters | Notes                                                       |
+| ---------------------------- | ----------- | ---------- | ----------------------------------------------------------- |
+| Get merchant by ID           | Main table  | merchantId | GetItem - Direct lookup from search click                   |
+| Search merchants by category | GSI1        | category   | Query - Returns all in category; client filters by distance |
+
+### Planned Patterns (Future Jobs)
+
+| Access Pattern                | API Call   | Index Needed | Job/Phase                  | Notes                                              |
+| ----------------------------- | ---------- | ------------ | -------------------------- | -------------------------------------------------- |
+| Create merchant               | PutItem    | Main Table   | Merchant Portal (Phase 2)  | New merchant registration                          |
+| Update merchant               | UpdateItem | Main Table   | Merchant Portal (Phase 2)  | Edit merchant details                              |
+| Delete merchant               | DeleteItem | Main Table   | Merchant Portal (Phase 2)  | Soft delete preferred                              |
+| Get merchant by email         | Query      | GSI2         | Merchant Portal (Phase 2)  | Login, password reset (GSI2PK: Email)              |
+| Filter by verification status | Query      | GSI3         | Admin Dashboard (Phase 3)  | Admin filtering (GSI3PK: VerificationStatus)       |
+| Search by product tags        | Query      | GSI4         | Enhanced Search (Phase 1b) | Multi-tag filtering (GSI4PK: Tag)                  |
+| Get merchants by signup date  | Query      | GSI5         | Analytics (Phase 3)        | Growth metrics (GSI5PK: SignupDate or date bucket) |
+
+---
+
 ## Main Table Structure
 
 ### Primary Key Design
@@ -31,6 +52,7 @@ The Merchant entity represents circular-economy service providers (repair shops,
 - **Merchants are independent**: No hierarchical relationships
 
 **Why Simple Key?**
+
 - Merchants don't have child items in the same table
 - All queries beyond "get by ID" use GSIs
 - Simpler application code (no sort key management)
@@ -39,30 +61,59 @@ The Merchant entity represents circular-economy service providers (repair shops,
 
 ## Global Secondary Indexes
 
-### CategoryIndex
+### GSI1: Category Queries
 
 **Purpose**: Enable searching merchants by category (primary use case for Search by Category job)
 
-| Entity   | GSI PK   | GSI SK | Notes                       |
-| -------- | -------- | ------ | --------------------------- |
-| Merchant | Category | -      | Query merchants by category |
+**Index Name**: GSI1
+
+| Entity   | GSI1PK       | GSI1SK | Notes                                                  |
+| -------- | ------------ | ------ | ------------------------------------------------------ |
+| Merchant | PrimaryCategory | -      | Generic attribute name for flexibility; stores category value |
 
 **Key Design Decisions**:
 
-- **Partition Key: Category** (String)
-  - Values: "Repair", "Refill", "Recycling", "Donate"
+- **Partition Key: GSI1PK** (String) - Generic attribute name
+  - **Value stored**: PrimaryCategory (e.g., "Repair", "Refill", "Recycling", "Donate")
   - Groups all merchants by primary category
   - Low cardinality (4 categories in Phase 1a)
+  - Generic name allows future reuse for related patterns
 
-- **No Sort Key**
+- **No Sort Key (GSI1SK)**
   - Client-side sorting by distance after fetching results
   - Alternative considered: Location as SK, but geospatial queries need client-side calculation anyway
   - Keeps GSI simple and flexible
+  - Can add GSI1SK later if needed without schema migration
 
 - **Projection: ALL**
   - Includes all merchant attributes
   - Simplest approach for MVP
   - Can optimize to KEYS_ONLY or INCLUDE later if costs become concern
+
+**Item Structure Example**:
+
+```typescript
+{
+  MerchantId: "merchant-123",
+  LegalName: "Green Repair Shop",
+  PrimaryCategory: "Repair",
+  GSI1PK: "Repair",        // Generic GSI attribute
+  // ... other attributes
+}
+```
+
+**Query Example**:
+
+```typescript
+QueryCommand({
+  TableName: "Merchants",
+  IndexName: "GSI1",
+  KeyConditionExpression: "GSI1PK = :category",
+  ExpressionAttributeValues: {
+    ":category": "Repair"
+  }
+})
+```
 
 **Performance Considerations**:
 
@@ -72,108 +123,63 @@ The Merchant entity represents circular-economy service providers (repair shops,
   - Mitigation: Implement pagination, limit results to reasonable radius
 
 **Future Enhancements**:
-- Phase 1b: May add sort key for advanced filtering
+
+- Phase 1b: May add GSI1SK for advanced filtering (e.g., verification status, rating)
+- Phase 1b: Could reuse GSI1 for subcategory queries by changing GSI1PK value
 - Phase 2: Consider ElasticSearch/OpenSearch for complex geospatial queries
 
 ---
 
-## Access Patterns
+## Entity Attributes
 
-### Implemented Patterns (Current)
+**Note**: This section documents the attributes for design purposes. TypeScript interfaces will be created during implementation by the backend service team.
 
-| Pattern                        | API Call | Index/Table   | Keys Used            | Notes                           |
-| ------------------------------ | -------- | ------------- | -------------------- | ------------------------------- |
-| Get merchant by ID             | GetItem  | Main Table    | MerchantId           | Direct lookup from search click |
-| Search merchants by category   | Query    | CategoryIndex | Category = "Repair"  | Returns all in category         |
-| Filter by category + location  | Query    | CategoryIndex | Category = "Repair"  | Client filters by distance      |
-| Create merchant                | PutItem  | Main Table    | MerchantId (new UUID)| New merchant registration       |
-| Update merchant                | UpdateItem | Main Table  | MerchantId           | Edit merchant details           |
-| Delete merchant                | DeleteItem | Main Table  | MerchantId           | Soft delete preferred           |
+### Primary Keys & GSI Attributes
 
-### Query Examples
-
-**Get merchant by ID**:
-```typescript
-const result = await docClient.send(
-  new GetCommand({
-    TableName: "Merchants",
-    Key: { MerchantId: merchantId },
-  })
-);
-```
-
-**Search by category**:
-```typescript
-const result = await docClient.send(
-  new QueryCommand({
-    TableName: "Merchants",
-    IndexName: "CategoryIndex",
-    KeyConditionExpression: "Category = :category",
-    ExpressionAttributeValues: {
-      ":category": "Repair",
-    },
-  })
-);
-
-// Client-side: Filter by distance, sort by rating/distance
-const nearbyMerchants = result.Items
-  .map(merchant => ({
-    ...merchant,
-    distance: calculateDistance(userLocation, merchant.Location)
-  }))
-  .filter(m => m.distance <= radiusKm)
-  .sort((a, b) => a.distance - b.distance);
-```
-
-### Planned Patterns (Future Jobs)
-
-| Pattern                          | Index Needed   | Job/Phase              | Notes                           |
-| -------------------------------- | -------------- | ---------------------- | ------------------------------- |
-| Get merchant by email            | EmailIndex GSI | Merchant Portal (Phase 2) | Login, password reset        |
-| Filter by verification status    | StatusIndex GSI| Admin Dashboard (Phase 3) | Admin filtering              |
-| Search by product tags           | TagsIndex GSI  | Enhanced Search (Phase 1b)| Multi-tag filtering          |
-| Get merchants by signup date     | DateIndex GSI  | Analytics (Phase 3)    | Growth metrics               |
-
----
-
-## Attributes
-
-**Note**: Attributes are defined in TypeScript entity schemas (not in ERD/entity-key tables). This section provides a reference.
+- `MerchantId` (string, UUID, required) - Primary partition key
+- `GSI1PK` (string, required) - Generic GSI attribute; stores PrimaryCategory value for category queries
 
 ### Core Identity
-- `MerchantId` (string, UUID) - Primary key
-- `LegalName` (string) - Official business name
-- `TradingName` (string, optional) - Display name
-- `ShortDescription` (string) - Brief description for search results
-- `PrimaryCategory` (enum) - Repair | Refill | Recycling | Donate
+
+- `LegalName` (string, required) - Official business name
+- `TradingName` (string, optional) - Display name (defaults to LegalName if not provided)
+- `ShortDescription` (string, required, max 200 chars) - Brief description for search results
+- `PrimaryCategory` (enum, required) - Repair | Refill | Recycling | Donate
+- `VerificationStatus` (enum, required) - Pending | Verified | Rejected (for verification badge)
 
 ### Location
-- `PrimaryAddress` (string) - Street address
-- `City` (string)
-- `State` (string)
-- `PostalCode` (string)
-- `Latitude` (number) - GPS coordinate
-- `Longitude` (number) - GPS coordinate
+
+- `PrimaryAddress` (string, required) - Street address
+- `City` (string, required)
+- `State` (string, required)
+- `PostalCode` (string, required)
+- `Latitude` (number, required) - GPS coordinate for distance calculations
+- `Longitude` (number, required) - GPS coordinate for distance calculations
 
 ### Contact
-- `PhoneNumber` (string)
-- `Email` (string)
+
+- `PhoneNumber` (string, required)
+- `Email` (string, required)
 - `WebsiteUrl` (string, optional)
 
 ### Search Metadata
-- `Categories` (string[]) - Array of categories (max 4, denormalized)
-- `Services` (Service[]) - List of services offered (embedded, bounded)
+
+- `Categories` (string[], max 4, required) - Array of categories for multi-category merchants (denormalized)
+- `Services` (Service[], max 10, optional) - List of services offered (embedded object, bounded)
 
 ### Metrics (Denormalized)
-- `RatingAverage` (number) - Average rating (0-5)
-- `RatingCount` (number) - Total number of reviews
+
+- `RatingAverage` (number, 0-5, default 0) - Average rating from reviews
+- `RatingCount` (number, default 0) - Total number of reviews
 
 ### Operational
-- `OperatingHours` (OperatingHours[]) - Weekly schedule (embedded, bounded)
+
+- `OperatingHours` (OperatingHours[], max 7, optional) - Weekly schedule (embedded object, bounded)
 
 ### Timestamps
-- `CreatedAt` (datetime, ISO 8601)
-- `UpdatedAt` (datetime, ISO 8601)
+
+- `CreatedAt` (datetime, ISO 8601, required) - Merchant registration date
+- `UpdatedAt` (datetime, ISO 8601, required) - Last modification date
 
 **Type Definitions**: See `merchants-search-service/src/entities/merchant.entity.ts`
 
@@ -181,14 +187,74 @@ const nearbyMerchants = result.Items
 
 ## Design Decisions Log
 
-| Date       | Decision                                      | Rationale                                                                 |
-| ---------- | --------------------------------------------- | ------------------------------------------------------------------------- |
-| 2024-10-28 | Simple primary key (MerchantId only)         | No parent-child relationships, all queries via GSIs                       |
-| 2024-10-28 | CategoryIndex with no sort key                | Client-side distance filtering, keeps GSI simple                          |
-| 2024-10-28 | Denormalize rating average/count              | Avoid join with Reviews table for sorting                                 |
-| 2024-10-28 | Embed operating hours (bounded list)          | Max 7 items, always displayed together                                    |
-| 2024-10-28 | Embed services list (bounded)                 | Max 10 items for Basic tier, always displayed together                    |
-| 2024-10-28 | Separate Reviews table                        | Unbounded relationship (hundreds of reviews possible)                     |
+| Date       | Decision                             | Rationale                                                                       |
+| ---------- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| 2024-10-28 | Simple primary key (MerchantId only) | No parent-child relationships, all queries via GSIs                             |
+| 2024-10-28 | GSI1 with no sort key                | Client-side distance filtering, keeps GSI simple                                |
+| 2024-11-06 | Generic GSI attribute names          | Use GSI1PK instead of Category for flexibility; allows future pattern reuse     |
+| 2024-10-28 | Denormalize rating average/count     | Avoid join with Reviews table for sorting                                       |
+| 2024-10-28 | Embed operating hours (bounded list) | Max 7 items, always displayed together                                          |
+| 2024-10-28 | Embed services list (bounded)        | Max 10 items for Basic tier, always displayed together                          |
+| 2024-10-28 | Separate Reviews table               | Unbounded relationship (hundreds of reviews possible)                           |
+| 2024-11-06 | Reserve GSI2-GSI5 for future         | Plan ahead for email lookup, status filtering, tags, and analytics (agile-ready) |
+
+---
+
+## Anti-Pattern Validation
+
+**Validation Date**: 2024-11-06  
+**Validated By**: Data Modeling Step 10
+
+### ✅ Passed Checks
+
+**No unbounded attributes in items:**
+- ✅ Reviews stored in separate table (not embedded in Merchant)
+- ✅ Services array bounded to max 10 items
+- ✅ OperatingHours bounded to max 7 items (one per day)
+- ✅ Categories array bounded to max 4 items
+
+**No hot partitions:**
+- ✅ Each merchant has unique MerchantId as partition key
+- ✅ GSI1 partitions by PrimaryCategory (4 categories, reasonable distribution)
+
+**No scan operations for common queries:**
+- ✅ Get by ID uses primary key (GetItem)
+- ✅ Search by category uses GSI1 (Query)
+- ✅ Future email lookup planned with GSI2
+
+**No large items (>400KB limit):**
+- ✅ All attributes are small (strings, numbers, small arrays)
+- ✅ Estimated item size: ~2-5KB per merchant
+- ✅ Well below 400KB limit
+
+**Good Faux-SQL patterns:**
+- ✅ One table for Merchants entity
+- ✅ Descriptive primary key (MerchantId)
+- ✅ Generic GSI attributes (GSI1PK) for flexibility
+- ✅ Foreign key to Reviews table (separate entity)
+- ✅ Bounded denormalization (rating metrics, operating hours)
+
+### ⚠️ Considerations
+
+**GSI1 potential hot partition:**
+- If one category becomes significantly more popular than others
+- **Mitigation**: Monitor CloudWatch metrics; consider sharding if needed in Phase 2
+- **Current risk**: Low (4 categories, expected even distribution)
+
+**Client-side distance filtering:**
+- All merchants in category returned; client filters by distance
+- **Mitigation**: Implement pagination, reasonable result limits
+- **Future**: Consider ElasticSearch/OpenSearch for geospatial queries (Phase 2)
+
+### 📋 Validation Summary
+
+**Status**: ✅ **PASSED** - Design is ready for implementation
+
+**Notes**:
+- No critical anti-patterns detected
+- Minor considerations documented with mitigation strategies
+- Design follows Faux-SQL best practices
+- Generic GSI naming allows future flexibility
 
 ---
 
@@ -197,6 +263,7 @@ const nearbyMerchants = result.Items
 **Challenge**: DynamoDB doesn't enforce foreign keys
 
 **Relationships**:
+
 - Merchant → Reviews (one-to-many, unbounded)
 
 **Application-Layer Checks**:
@@ -207,9 +274,9 @@ const reviews = await getReviewsForMerchant(merchantId);
 if (reviews.length > 0) {
   // Option 1: Prevent deletion
   throw new Error("Cannot delete merchant with existing reviews");
-  
+
   // Option 2: Cascade delete (use carefully)
-  await Promise.all(reviews.map(r => deleteReview(r.ReviewId)));
+  await Promise.all(reviews.map((r) => deleteReview(r.ReviewId)));
 }
 ```
 
@@ -217,9 +284,10 @@ if (reviews.length > 0) {
 
 ## Evolution History
 
-| Date       | Job                | Change                                    |
-| ---------- | ------------------ | ----------------------------------------- |
-| 2024-10-28 | Search by Category | Created Merchants table with CategoryIndex|
+| Date       | Job                | Change                                                              |
+| ---------- | ------------------ | ------------------------------------------------------------------- |
+| 2024-10-28 | Search by Category | Created Merchants table with GSI1 for category queries              |
+| 2024-11-06 | Search by Category | Updated GSI naming to use generic attributes (GSI1PK) for flexibility |
 
 ---
 

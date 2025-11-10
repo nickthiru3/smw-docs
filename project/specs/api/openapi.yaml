@@ -1,0 +1,77 @@
+openapi: "3.0.3"
+info:
+  title: SMW API
+  description: |
+    API for the SMW (SaveMyWaste) platform - a directory and marketplace for sustainable waste management services. Enables consumers to discover and interact with circular-economy service providers.
+  version: "1.0.0"
+  contact:
+    name: SMW Development Team
+
+servers:
+  - url: https://api.smw.example.com/v1
+    description: Production
+  - url: https://api-staging.smw.example.com/v1
+    description: Staging
+  - url: http://localhost:3000/v1
+    description: Local development
+
+tags:
+  - name: merchants
+    description: Merchant discovery and information
+  - name: reviews
+    description: Merchant reviews and ratings
+
+components:
+  parameters:
+    $ref: "./parameters/_index.yaml"
+
+  schemas:
+    $ref: "./schemas/_index.yaml"
+
+  responses:
+    $ref: "./responses/_index.yaml"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authenticated requests
+
+security: [] # Most endpoints are public for MVP
+
+paths:
+  # Story 001: Browse Providers by Waste Category
+  /merchants/search:
+    $ref: "./resources/merchants/search.yaml"
+
+  # Future stories will add more paths here
+  # /merchants/{merchantId}:
+  #   $ref: "./resources/merchants/get-by-id.yaml"
+
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params:
+    validateRequestParameters: true
+    validateRequestBody: false
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+  none:
+    validateRequestBody: false
+    validateRequestParameters: false
+
+x-amazon-apigateway-request-validator: all
+
+x-amazon-apigateway-cors:
+  allowOrigin: "*"
+  allowHeaders:
+    - Content-Type
+  allowMethods:
+    - "*"
+
+# Consider adding x-amazon-apigateway-auth for future authenticated endpoints
+x-amazon-apigateway-auth:
+  type: NONE

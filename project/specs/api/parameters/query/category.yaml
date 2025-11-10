@@ -1,0 +1,8 @@
+name: category
+in: query
+required: true
+description: Primary service category to filter by
+schema:
+  type: string
+  enum: [Repair, Refill, Recycling, Donate]
+example: Repair
