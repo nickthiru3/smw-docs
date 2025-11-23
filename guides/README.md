@@ -22,7 +22,6 @@ This directory contains comprehensive guides for building and delivering feature
 ### Architecture & Patterns
 
 - **[Serverless Microservices Architecture](./design-principles/serverless-microservices-architecture-v3.md)** - Technical architecture patterns for frontend, BFF, and backend
-- **[SSM Contracts and Generic Bindings Pattern](./patterns/ssm-bindings.md)** - Service configuration management
 
 ### Data Modeling
 

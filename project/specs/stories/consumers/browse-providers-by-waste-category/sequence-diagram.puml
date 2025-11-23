@@ -1,5 +1,5 @@
-@startuml search-merchants-by-category
-title Search Merchants by Category (Story 001)
+@startuml get-merchants-by-category
+title Get Merchants by Category (Story 001)
 
 actor Consumer
 participant "SvelteKit\nFrontend" as UI
@@ -7,21 +7,21 @@ participant "SvelteKit\nBFF" as BFF
 participant "Merchants\nService" as MerchantSvc
 database "DynamoDB\nMerchants Table" as DB
 
-== Search Flow (Home Page → Listings Page) ==
+== Get Merchants Flow (Home Page → Listings Page) ==
 
 Consumer -> UI: Select category & distance\n(e.g., "Repair Shop", "Within 5km")
 activate UI
 
 UI -> UI: Get user location\n(address or geolocation)\nStore: userLat, userLng
 
-UI -> BFF: GET /api/merchants/search\n?category=Repair
+UI -> BFF: GET /api/merchants\n?category=Repair
 activate BFF
 note right: Query params:\n- category (required)\n\nNo location or radius passed!\nBackend returns ALL merchants
 
 BFF -> BFF: Validate category param
 BFF -> BFF: Sanitize input
 
-BFF -> MerchantSvc: GET /internal/merchants\n?category=Repair
+BFF -> MerchantSvc: GET /merchants\n?category=Repair
 activate MerchantSvc
 note right: Simple query:\nJust category filter
 

@@ -1,8 +1,8 @@
 get:
-  operationId: searchMerchantsByCategory
+  operationId: getMerchantsByCategory
   tags:
     - merchants
-  summary: Search merchants by category
+  summary: Get merchants by category
   description: |
     Retrieves all merchants that offer services in the specified category.
     Returns complete merchant data including location coordinates for client-side distance calculations.
@@ -50,7 +50,7 @@ get:
                 example: "Repair"
           examples:
             repairShops:
-              summary: Search for repair shops
+              summary: Get repair shops
               value:
                 merchants:
                   - merchantId: "550e8400-e29b-41d4-a716-446655440000"

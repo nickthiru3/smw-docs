@@ -212,7 +212,7 @@ And I should be able to adjust filters or clear them easily
 - Browser geolocation accuracy varies by device: GPS (mobile, ~5-50m), WiFi triangulation (~50-100m), IP address (~city-level)
 - Geolocation timeout should be set to 10 seconds to avoid indefinite waiting
 - Requires baseline taxonomy for categories, waste types, and product tags sourced during dataset ingestion.
-- Backend ownership: `Merchants Service` (`svc-merchants/`) exposes `merchants/search?category={categoryName}&lat={lat}&lng={lng}&radius={km}` per the OpenAPI contract.
+- Backend ownership: `Merchants Service` (`svc-merchants/`) exposes `GET /merchants?category={categoryName}` per the OpenAPI contract. Distance filtering is performed client-side.
 
 ### Phase Scope
 

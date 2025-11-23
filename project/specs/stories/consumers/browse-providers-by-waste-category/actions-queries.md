@@ -13,15 +13,16 @@ This story involves **read-only operations** (queries only). No state modificati
 
 ## Queries
 
-### Query 1: Search Merchants by Category
+### Query 1: Get Merchants by Category
 
 **Description**: Retrieves all merchants that offer services in a specified category (Repair, Refill, Recycling, Donate). Returns complete merchant data including location coordinates for client-side distance calculations.
 
 **Type**: Query (Read-only, no side effects)
 
 **API Endpoint**:
-- **BFF**: `GET /api/merchants/search?category={category}`
-- **Backend Service**: `GET /internal/merchants?category={category}`
+
+- **BFF**: `GET /api/merchants?category={category}`
+- **Backend Service**: `GET /merchants?category={category}`
 
 **Inputs**:
 
@@ -101,17 +102,20 @@ This story involves **read-only operations** (queries only). No state modificati
   }
   ```
 
-**Caching**: 
+**Caching**:
+
 - **BFF Layer**: Can be cached for 5 minutes (merchants data changes infrequently)
 - **CDN**: Can be cached with category-based cache keys
 - **Cache Invalidation**: On merchant create/update/delete operations
 
-**Performance Target**: 
+**Performance Target**:
+
 - **Backend Query**: <100ms (DynamoDB GSI1 query)
 - **BFF Response**: <150ms (including transformation)
 - **Total (UI → BFF → Backend → UI)**: <200ms
 
 **DynamoDB Query Details**:
+
 ```typescript
 {
   TableName: "Merchants",
@@ -126,6 +130,7 @@ This story involves **read-only operations** (queries only). No state modificati
 **Client-Side Processing** (not part of backend API):
 
 After receiving the response, the frontend performs:
+
 1. **Distance Calculation**: Haversine formula using user location and merchant lat/lng
 2. **Radius Filtering**: Filter merchants within selected radius (5km, 10km, 20km)
 3. **Additional Filtering**: Category tags, rating thresholds, verification status
@@ -153,11 +158,13 @@ After receiving the response, the frontend performs:
 ### Architecture Decisions
 
 1. **No Location Parameters in API**: User location (lat/lng) and radius are NOT passed to the backend. This allows:
+
    - Response caching (same for all users)
    - Instant client-side radius adjustments
    - Flexible distance calculation methods
 
 2. **Return All Merchants in Category**: Backend returns complete dataset for the category. Client filters by distance. Benefits:
+
    - Simpler backend logic
    - Better caching
    - Instant filter adjustments

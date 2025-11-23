@@ -42,8 +42,8 @@ security: [] # Most endpoints are public for MVP
 
 paths:
   # Story 001: Browse Providers by Waste Category
-  /merchants/search:
-    $ref: "./resources/merchants/search.yaml"
+  /merchants:
+    $ref: "./resources/merchants/get.yaml"
 
   # Future stories will add more paths here
   # /merchants/{merchantId}:
