@@ -103,7 +103,7 @@ get:
     bff:
       enabled: true
       ttl: 300
-      key: "merchants:search:${category}"
+      key: "merchants:get:${category}"
     cdn:
       enabled: true
       ttl: 300
