@@ -29,6 +29,19 @@ This directory contains comprehensive guides for building and delivering feature
   - [Faux-SQL Approach](./data-modeling/faux-sql-dynamodb-modeling.md) - Multiple tables, descriptive names
   - [Single-Table Design](./data-modeling/single-table-design.md) - High-performance single-table patterns
 
+### Infrastructure & Templates
+
+- **[Shared CDK Constructs](./shared-constructs/README.md)** - Shared construct library initiative
+
+  - [Plan](./shared-constructs/01-shared-constructs-plan.md) - Architecture and implementation plan
+  - [Tracker](./shared-constructs/02-implementation-tracker.md) - Progress tracking
+
+- **[AI Template Guides](./ai/README.md)** - AI/Agentic service template documentation
+  - [Backend Infrastructure Adoption](./ai/01-backend-infrastructure-adoption.md)
+  - [Template Conversion Plan](./ai/02-template-conversion-plan.md)
+  - [Template Conversion Progress](./ai/03-template-conversion-progress.md)
+  - [Template Comparison](./ai/04-template-comparison.md)
+
 ---
 
 ## 📝 Notes

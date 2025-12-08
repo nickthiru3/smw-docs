@@ -22,20 +22,21 @@ This directory contains guides for:
 
 ### Foundation
 
-| Guide                                                                            | Status    | Description                                         |
-| -------------------------------------------------------------------------------- | --------- | --------------------------------------------------- |
-| [01-backend-infrastructure-adoption.md](./01-backend-infrastructure-adoption.md) | ✅ Draft  | Decision to adopt svc-merchants as backend template |
-| [02-template-conversion-plan.md](./02-template-conversion-plan.md)               | ✅ Draft  | Plan for converting to reusable GitHub template     |
-| [03-template-conversion-progress.md](./03-template-conversion-progress.md)       | 🔄 Active | Progress log for template conversion work           |
+| Guide                                                                            | Status    | Description                                          |
+| -------------------------------------------------------------------------------- | --------- | ---------------------------------------------------- |
+| [01-backend-infrastructure-adoption.md](./01-backend-infrastructure-adoption.md) | ✅ Draft  | Decision to adopt svc-merchants as backend template  |
+| [02-template-conversion-plan.md](./02-template-conversion-plan.md)               | ✅ Draft  | Plan for converting to reusable GitHub template      |
+| [03-template-conversion-progress.md](./03-template-conversion-progress.md)       | 🔄 Active | Progress log for template conversion work            |
+| [04-template-comparison.md](./04-template-comparison.md)                         | ✅ Draft  | Comparison of svc-merchants vs microservice-template |
 
 ### AI Capabilities (To Be Created)
 
 | Guide                           | Status     | Description                              |
 | ------------------------------- | ---------- | ---------------------------------------- |
-| 04-agent-execution-patterns.md  | ⬜ Planned | LangGraph integration, Lambda patterns   |
-| 05-orchestration-patterns.md    | ⬜ Planned | Step Functions for multi-agent systems   |
-| 06-payment-integration.md       | ⬜ Planned | Stripe subscription and usage billing    |
-| 07-vector-search-integration.md | ⬜ Planned | Semantic search with Pinecone/OpenSearch |
+| 05-agent-execution-patterns.md  | ⬜ Planned | LangGraph integration, Lambda patterns   |
+| 06-orchestration-patterns.md    | ⬜ Planned | Step Functions for multi-agent systems   |
+| 07-payment-integration.md       | ⬜ Planned | Stripe subscription and usage billing    |
+| 08-vector-search-integration.md | ⬜ Planned | Semantic search with Pinecone/OpenSearch |
 
 ### Product Guides (To Be Created)
 
@@ -50,9 +51,12 @@ This directory contains guides for:
 ## Related Documentation
 
 - **AI Strategy:** `business/docs/ai-agentic-products-strategy/`
-- **Original Source:** `svc-merchants/` (do not modify)
-- **Users Template:** `svc-users-template/` (working copy for conversion)
-- **Template Docs:** `svc-users-template/docs/`
+- **Original Sources:**
+  - `svc-merchants/` (do not modify)
+  - `microservice-template/` (external, do not modify)
+- **Working Copies:**
+  - `svc-users-template/` - Users/auth service template (from svc-merchants)
+  - `svc-ai-template/` - Generic AI microservice template (from microservice-template)
 
 ---
 
